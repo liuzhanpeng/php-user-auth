@@ -1,0 +1,16 @@
+{
+    "name": "peng/php-user-auth",
+    "description": "简单的php用户认证、授权库",
+    "type": "library",
+    "license": "MIT",
+    "authors": [{
+        "name": "liuzhanpeng",
+        "email": "liuzhanpeng@gmail.com"
+    }],
+    "require": {
+        "php": ">=7.0"
+    },
+    "autoload": {
+        "Lzpeng\\Auth\\": "src/"
+    }
+}
