@@ -1,8 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth;
-
-use Lzpeng\Auth\Contracts\UserInterface;
+namespace Lzpeng\Auth\Contracts;
 
 /**
  * 认证器接口
@@ -16,7 +14,7 @@ interface AuthenticatorInterface
      *
      * @param array $credentials 用户凭证
      * @return mixed
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\Exception
      */
     public function login(array $credentials);
 
@@ -34,7 +32,7 @@ interface AuthenticatorInterface
      *
      * @return mixed|null
      */
-    public function getId();
+    public function id();
 
     /**
      * 获取用户身份对象
@@ -42,14 +40,14 @@ interface AuthenticatorInterface
      *
      * @return UserInterface|null
      */
-    public function getUser();
+    public function user();
 
     /**
      * 设置用户身份对象
      *
      * @param UserInterface $user
      * @return void
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\Exception
      */
     public function setUser(UserInterface $user);
 
@@ -57,7 +55,14 @@ interface AuthenticatorInterface
      * 用户登出
      *
      * @return void
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\Exception
      */
     public function logout();
+
+    /**
+     * 返回用户身份对象提供器
+     *
+     * @return UserProviderInterface
+     */
+    public function getUserProvider();
 }

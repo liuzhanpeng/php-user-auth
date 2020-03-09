@@ -1,6 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth;
+namespace Lzpeng\Auth\Contracts;
 
 /**
  * 用户身份对象提供器接口
@@ -14,7 +14,7 @@ interface UserProviderInterface
      *
      * @param mixed $id 用户身份标识
      * @return UserInterface|null
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\Exception
      */
     public function findById($id);
 
@@ -23,7 +23,7 @@ interface UserProviderInterface
      *
      * @param array $credentials 用户凭证
      * @return UserInterface|null
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\Exception
      */
     public function findByCredentials(array $credentials);
 
@@ -33,7 +33,7 @@ interface UserProviderInterface
      * @param UserInterface $user　用户身份对象
      * @param array $credentials 用户凭证
      * @return void
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\Exception
      */
     public function validateCredentials(UserInterface $user, array $credentials);
 }

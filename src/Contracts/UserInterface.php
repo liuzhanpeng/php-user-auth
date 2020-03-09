@@ -1,6 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth;
+namespace Lzpeng\Auth\Contracts;
 
 /**
  * 用户身份对象接口
@@ -14,5 +14,5 @@ interface UserInterface
      *
      * @return mixed
      */
-    public function getId();
+    public function id();
 }

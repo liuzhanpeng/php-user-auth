@@ -1,6 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth;
+namespace Lzpeng\Auth\Contracts;
 
 /**
  * 认证器创建者接口
