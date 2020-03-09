@@ -77,10 +77,6 @@ class EventManager implements EventManagerInterface
      */
     public function trigger(string $event, $arg)
     {
-        if (!isset($this->events[$event])) {
-            throw new Exception(sprintf('无效事[%s]', $event));
-        }
-
         foreach ($this->events[$event] as $item) {
             $listener = $item['listener'];
             if ($listener instanceof EventListenerInterface) {

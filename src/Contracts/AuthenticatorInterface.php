@@ -11,6 +11,7 @@ interface AuthenticatorInterface
 {
     /**
      * 用户登录
+     * 通过抛出不同的异常来处理不同登录失败的处理情况
      *
      * @param array $credentials 用户凭证
      * @return mixed

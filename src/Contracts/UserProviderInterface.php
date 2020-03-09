@@ -29,6 +29,7 @@ interface UserProviderInterface
 
     /**
      * 检查用户凭证是否有效 
+     * 不使用返回ture/false, 而是采用抛出异常方式主要是为了能将具体错误信息抛到业务层实现不现的处理逻辑
      *
      * @param UserInterface $user　用户身份对象
      * @param array $credentials 用户凭证
