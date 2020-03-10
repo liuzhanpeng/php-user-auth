@@ -15,7 +15,7 @@ interface AuthenticatorInterface
      *
      * @param array $credentials 用户凭证
      * @return mixed
-     * @throws \Lzpeng\Auth\Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function login(array $credentials);
 
@@ -48,7 +48,7 @@ interface AuthenticatorInterface
      *
      * @param UserInterface $user
      * @return void
-     * @throws \Lzpeng\Auth\Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function setUser(UserInterface $user);
 
@@ -56,7 +56,7 @@ interface AuthenticatorInterface
      * 用户登出
      *
      * @return void
-     * @throws \Lzpeng\Auth\Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function logout();
 

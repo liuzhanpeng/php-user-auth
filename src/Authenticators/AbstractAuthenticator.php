@@ -5,7 +5,8 @@ namespace Lzpeng\Auth\Authenticators;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
 use Lzpeng\Auth\Contracts\AuthEventInterface;
 use Lzpeng\Auth\Contracts\UserInterface;
-use Lzpeng\Auth\Exceptions\Exception;
+use Lzpeng\Auth\Exceptions\AuthException;
+use Lzpeng\Auth\Exceptions\InvalidCredentialException;
 
 /**
  * 抽象认证器
@@ -73,7 +74,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
 
             $user = $this->getUserProvider()->findByCredentials($credentials);
             if (is_null($user)) {
-                throw new Exception('登录失败: 无效的用户凭证');
+                throw new InvalidCredentialException('无效的用户凭证');
             }
 
             $this->getUserProvider()->validateCredentials($user, $credentials);
@@ -87,7 +88,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             ]);
 
             return $result;
-        } catch (Exception $ex) {
+        } catch (AuthException $ex) {
             $this->getEventManager()->trigger(self::EVENT_LOGIN_FAILURE, [
                 'credentials' => $credentials,
                 'exception' => $ex,
@@ -141,7 +142,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             ]);
 
             return $result;
-        } catch (Exception $ex) {
+        } catch (AuthException $ex) {
             $this->getEventManager()->trigger(self::EVENT_LOGIN_FAILURE, [
                 'exception' => $ex,
             ]);

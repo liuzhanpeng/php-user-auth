@@ -14,7 +14,7 @@ interface EventListenerInterface
      *
      * @param mixed $arg 事件对象; 可为任意类型
      * @return void
-     * @throws \Lzpeng\Auth\Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function handle($arg);
 }

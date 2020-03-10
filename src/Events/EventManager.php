@@ -4,7 +4,7 @@ namespace Lzpeng\Auth\Events;
 
 use Lzpeng\Auth\Contracts\EventListenerInterface;
 use Lzpeng\Auth\Contracts\EventManagerInterface;
-use Lzpeng\Auth\Exceptions\Exception;
+use Lzpeng\Auth\Exceptions\EventException;
 
 /**
  * 内部默认的事件管理器
@@ -36,7 +36,7 @@ class EventManager implements EventManagerInterface
     public function attachListener(string $event, $listener, int $priority = 0)
     {
         if (!$listener instanceof EventListenerInterface && !is_callable($listener)) {
-            throw new Exception('事件监听器必实现ListenerInterface或是callable对象');
+            throw new EventException('事件监听器必实现ListenerInterface或是callable对象');
         }
 
         if (!isset($this->events[$event])) {

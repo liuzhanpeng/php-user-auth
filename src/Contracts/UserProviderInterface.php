@@ -14,7 +14,7 @@ interface UserProviderInterface
      *
      * @param mixed $id 用户身份标识
      * @return UserInterface|null
-     * @throws \Lzpeng\Auth\Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function findById($id);
 
@@ -23,7 +23,7 @@ interface UserProviderInterface
      *
      * @param array $credentials 用户凭证
      * @return UserInterface|null
-     * @throws \Lzpeng\Auth\Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function findByCredentials(array $credentials);
 
@@ -34,7 +34,7 @@ interface UserProviderInterface
      * @param UserInterface $user　用户身份对象
      * @param array $credentials 用户凭证
      * @return void
-     * @throws \Lzpeng\Auth\Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function validateCredentials(UserInterface $user, array $credentials);
 }

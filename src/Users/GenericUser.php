@@ -60,4 +60,3 @@ class GenericUser implements UserInterface
         return isset($this->data[$key]);
     }
 }
-}

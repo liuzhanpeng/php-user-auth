@@ -3,10 +3,10 @@
 namespace Lzpeng\Auth\Exceptions;
 
 /**
- * 配置相关异常
+ * 事件相关异常
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-class ConfigException extends Exception
+class EventException extends Exception
 {
 }

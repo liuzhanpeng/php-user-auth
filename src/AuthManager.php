@@ -14,6 +14,8 @@ use Lzpeng\Auth\Exceptions\Exception;
 
 /**
  * 用户认证管理器
+ * 对内，管理并组合认证器和用户身份提供器
+ * 对外，创建并返回认证器实例
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
@@ -82,7 +84,7 @@ class AuthManager
 
         // 判断配置内是否存在指定认证器配置项
         if (!array_key_exists($name, $this->config['authenticators'])) {
-            throw new Exception(sprintf('找不到认证配置项[%s]', $name));
+            throw new ConfigException(sprintf('找不到认证配置项[%s]', $name));
         }
 
         // 如果实例已存在，直接返回
@@ -102,7 +104,7 @@ class AuthManager
      *
      * @param UserProviderInterface $userProvider 用户身份对象提供器
      * @param array $config 认证器配置
-     * @return void
+     * @return AuthenticatorInterface
      * @throws Exceptions\Exception
      */
     private function createAuthenticator(UserProviderInterface $userProvider, array $config)

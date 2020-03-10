@@ -34,7 +34,7 @@ interface EventManagerInterface
      * @param string $event 事件标识
      * @param mixed $arg 事件参数对象; 可为任意类型
      * @return void
-     * @throws \Lzpeng\Auth\Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function trigger(string $event, $arg);
 
