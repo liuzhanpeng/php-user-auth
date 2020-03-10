@@ -9,7 +9,7 @@ use Lzpeng\Auth\Contracts\EventManagerCreatorInterface;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-class EventManagerCreator extends EventManagerCreatorInterface
+class EventManagerCreator implements EventManagerCreatorInterface
 {
     /**
      * @inheritDoc

@@ -106,7 +106,11 @@ class AuthManager
      */
     private function createAuthenticator(UserProviderInterface $userProvider, array $config)
     {
-        $creator = $this->authenticatorCreators[$config['dirver']];
+        if (!isset($this->authenticatorCreators[$config['driver']])) {
+            throw new Exception(sprintf('找不到认证器驱动[%s]', $config['driver']));
+        }
+
+        $creator = $this->authenticatorCreators[$config['driver']];
         if ($creator instanceof AuthenticatorCreatorInterface) {
             $authenticator = $creator->createAuthenticator($config['params']);
         } else {
@@ -114,7 +118,7 @@ class AuthManager
         }
         $authenticator->setUserProvider($userProvider);
 
-        if ($authenticator instanceof AuthenticatorInterface) {
+        if (!$authenticator instanceof AuthenticatorInterface) {
             throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface', $config['driver']));
         }
 
@@ -141,14 +145,14 @@ class AuthManager
      */
     private function createUserProvider(array $config)
     {
-        $creator = $this->userProviderCreators[$config['dirver']];
+        $creator = $this->userProviderCreators[$config['driver']];
         if ($creator instanceof UserProviderCreatorInterface) {
             $provider = $creator->createUserProvider($config['params']);
         } else {
             $provider = call_user_func($creator, $config['params']);
         }
 
-        if ($provider instanceof UserProviderInterface) {
+        if (!$provider instanceof UserProviderInterface) {
             throw new Exception(sprintf('用户身份对象提供器[%s]必须实现UserProviderInterface', $config['driver']));
         }
 
