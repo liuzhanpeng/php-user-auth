@@ -79,6 +79,10 @@ class AuthManager
     public function create($name = null)
     {
         if (is_null($name)) {
+            if (!isset($this->config['default'])) {
+                throw new ConfigException('找不到默认认证配置项');
+            }
+
             $name = $this->config['default'];
         }
 
