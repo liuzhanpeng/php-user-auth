@@ -1,6 +1,6 @@
 {
     "name": "peng/php-user-auth",
-    "description": "简单的php用户认证、授权库",
+    "description": "php用户认证库，提供一个一致性的核心api, 方便整合到各个框架中。",
     "type": "library",
     "license": "MIT",
     "authors": [{
@@ -12,5 +12,11 @@
     },
     "autoload": {
         "Lzpeng\\Auth\\": "src/"
+    },
+    "autoload-dev": {
+        "Lzpeng\\Tests\\": "tests/"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.4|^9.0"
     }
 }
