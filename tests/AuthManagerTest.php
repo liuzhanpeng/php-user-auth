@@ -1,5 +1,7 @@
 <?php
 
+namespace Lzpeng\Tests;
+
 use Lzpeng\Auth\Authenticators\NativeSessionAuthenticator;
 use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;

@@ -4,7 +4,8 @@ namespace Lzpeng\Auth\UserProviders;
 
 use Lzpeng\Auth\Contracts\UserProviderInterface;
 use Lzpeng\Auth\Contracts\UserInterface;
-use Lzpeng\Auth\Exceptions\Exception;
+use Lzpeng\Auth\Exceptions\InvalidCredentialException;
+use Lzpeng\Auth\Users\GenericUser;
 
 /**
  * 基于原生数组的简单的用户身份对象提供器
@@ -50,7 +51,7 @@ class NativeArrayUserProvider implements UserProviderInterface
     {
         foreach ($this->config as $item) {
             if ($item['id'] == $id) {
-                return $item;
+                return new GenericUser($item);
             }
         }
 
@@ -69,12 +70,12 @@ class NativeArrayUserProvider implements UserProviderInterface
                     continue;
                 }
                 if (!isset($item[$key]) || $item[$key] !== $val) {
-                    throw new Exception('用户名或密码错误');
+                    throw new InvalidCredentialException('用户名或密码错误');
                 }
                 $pass = true;
             }
             if ($pass) {
-                return $item;
+                return new GenericUser($item);
             }
         }
 
@@ -86,9 +87,8 @@ class NativeArrayUserProvider implements UserProviderInterface
      */
     public function validateCredentials(UserInterface $user, array $credentials)
     {
-        $item = $this->config[$user->id()];
-        if ($user->password !== $item['password']) {
-            throw new Exception('用户名或密码错误');
+        if (strcmp($user->password, $credentials['password']) !== 0) {
+            throw new InvalidCredentialException('用户名或密码错误');
         }
     }
 }
