@@ -108,10 +108,11 @@ class AuthManager
     {
         $creator = $this->authenticatorCreators[$config['dirver']];
         if ($creator instanceof AuthenticatorCreatorInterface) {
-            $authenticator = $creator->createAuthenticator($userProvider, $config['params']);
+            $authenticator = $creator->createAuthenticator($config['params']);
         } else {
-            $authenticator = call_user_func_array($creator, [$userProvider, $config['params']]);
+            $authenticator = call_user_func_array($creator, [$config['params']]);
         }
+        $authenticator->setUserProvider($userProvider);
 
         if ($authenticator instanceof AuthenticatorInterface) {
             throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface', $config['driver']));
