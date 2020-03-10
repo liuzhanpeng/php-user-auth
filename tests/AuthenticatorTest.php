@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
 use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
+use Lzpeng\Auth\Contracts\UserInterface;
 use Lzpeng\Auth\Exceptions\AuthException;
 use Lzpeng\Tests\Authenticators\MemoryAuthenticator;
 
@@ -39,7 +40,20 @@ class AuthenticatorTest extends TestCase
     /**
      * @depends testCreateAuthenticator
      */
-    public function testLoginWithWrongCrendentials($authenticator)
+    public function testLoginWithCrendentialsByWrongName($authenticator)
+    {
+        $this->expectException(AuthException::class);
+
+        $authenticator->login([
+            'name' => 'wrong_name',
+            'password' => 'wrong_password',
+        ]);
+    }
+
+    /**
+     * @depends testCreateAuthenticator
+     */
+    public function testLoginWithCrendentialsByWrongPassword($authenticator)
     {
         $this->expectException(AuthException::class);
 
@@ -61,23 +75,39 @@ class AuthenticatorTest extends TestCase
             'password' => '123654',
         ]);
 
+        return $authenticator;
+    }
+
+    /**
+     * @depends testLogin
+     */
+    public function testIsLogined($authenticator)
+    {
         $this->assertTrue($authenticator->isLogined());
+    }
 
+    /**
+     * @depends testLogin
+     */
+    public function testGetId($authenticator)
+    {
         $this->assertEquals(1, $authenticator->id());
+    }
 
+    /**
+     * @depends testLogin
+     */
+    public function testGetUser($authenticator)
+    {
+        $this->assertInstanceOf(UserInterface::class, $authenticator->user());
         $this->assertEquals('测试用户1', $authenticator->user()->remark);
     }
 
     /**
-     * @depends testCreateAuthenticator
+     * @depends testLogin
      */
     public function testLogout($authenticator)
     {
-        $authenticator->login([
-            'name' => 'peng',
-            'password' => '123654',
-        ]);
-
         $this->assertTrue($authenticator->isLogined());
 
         $authenticator->logout();

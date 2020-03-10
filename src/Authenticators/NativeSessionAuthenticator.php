@@ -21,6 +21,7 @@ class NativeSessionAuthenticator extends AbstractAuthenticator
     public function __construct(string $sessionKey)
     {
         $this->sessionKey = $sessionKey;
+        session_start();
     }
 
     /**

@@ -8,6 +8,11 @@ use Lzpeng\Auth\Contracts\UserInterface;
 
 class MemoryAuthenticator extends AbstractAuthenticator
 {
+    /**
+     * 会话数据
+     *
+     * @var array
+     */
     private $sessions = [];
 
     /**

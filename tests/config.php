@@ -24,7 +24,7 @@ return [
                 ]
             ],
             'params' => [
-                'session_key' => 'AdminIdentity',
+                'session_key' => 'UserIdentity',
             ],
         ],
         'test2' => [
@@ -47,7 +47,7 @@ return [
                 ]
             ],
             'params' => [
-                'session_key' => 'AdminIdentity',
+                'session_key' => 'UserIdentity',
             ],
         ],
     ]
