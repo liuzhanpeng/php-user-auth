@@ -36,8 +36,8 @@ class AuthManagerTest extends TestCase
 
     public function testCreateWithUserProviderByCallable()
     {
-        $this->authManager->registerUserProviderCreator('test_provider_driver', function () {
-            return new NativeArrayUserProviderCreator();
+        $this->authManager->registerUserProviderCreator('test_provider_driver', function ($config) {
+            return new NativeArrayUserProvider($config);
         });
 
         return $this->authManager;
@@ -82,7 +82,7 @@ class AuthManagerTest extends TestCase
         $this->assertInstanceOf(AuthenticatorInterface::class, $authenticator1);
 
         $authenticator2 = $authManager->create();
-        $this->assertSame($authenticator1, $authenticator2, '两个认证器实例不同');
+        $this->assertSame($authenticator1, $authenticator2, '单个认证项产生了多个认证器实例');
 
         return $authenticator1;
     }
