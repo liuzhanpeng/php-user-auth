@@ -5,8 +5,12 @@ namespace Lzpeng\Auth;
 use Lzpeng\Auth\Contracts\AuthenticatorCreatorInterface;
 use Lzpeng\Auth\Contracts\UserProviderCreatorInterface;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
-use Lzpeng\Auth\Contracts\UserProviderInterface;
 use Lzpeng\Auth\Contracts\AuthEventInterface;
+use Lzpeng\Auth\Contracts\EventManagerCreatorInterface;
+use Lzpeng\Auth\Contracts\EventManagerInterface;
+use Lzpeng\Auth\Contracts\UserProviderInterface;
+use Lzpeng\Auth\Events\EventManager;
+use Lzpeng\Auth\Events\EventManagerCreator;
 use Lzpeng\Auth\Exceptions\Exception;
 
 /**
@@ -47,6 +51,13 @@ class AuthManager
     private $userProviderCreators = [];
 
     /**
+     * 事件管理器创建者
+     *
+     * @var EventManagerCreatorInterface
+     */
+    private $eventManagerCreator;
+
+    /**
      * 构造函数
      * 
      * @param array $config 配置
@@ -71,8 +82,8 @@ class AuthManager
         }
 
         // 判断配置内是否存在指定认证器配置项
-        if (!array_key_exists($name, $this->config['guards'])) {
-            throw new Exception(sprintf('找不到[%s]认证配置项', $name));
+        if (!array_key_exists($name, $this->config['authenticators'])) {
+            throw new Exception(sprintf('找不到认证配置项[%s]', $name));
         }
 
         // 如果实例已存在，直接返回
@@ -80,11 +91,11 @@ class AuthManager
             return $this->authenticators[$name];
         }
 
-        $config = $this->config['guards'][$name];
+        $config = $this->config['authenticators'][$name];
 
         $userProvider = $this->createUserProvider($config['provider']);
 
-        return $this->authenticators[$name] = $this->createAuthenticator($userProvider, $config['authenticator']);
+        return $this->authenticators[$name] = $this->createAuthenticator($userProvider, $config);
     }
 
     /**
@@ -99,13 +110,24 @@ class AuthManager
     {
         $creator = $this->authenticatorCreators[$config['dirver']];
         if ($creator instanceof AuthenticatorCreatorInterface) {
-            $authenticator = $creator->createAuthenticator($userProvider, $config);
+            $authenticator = $creator->createAuthenticator($userProvider, $config['params']);
         } else {
-            $authenticator = call_user_func_array($creator, [$userProvider, $config]);
+            $authenticator = call_user_func_array($creator, [$userProvider, $config['params']]);
         }
 
         if ($authenticator instanceof AuthenticatorInterface) {
             throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface', $config['driver']));
+        }
+
+        if ($authenticator instanceof AuthEventInterface) {
+            if (is_null($this->eventManagerCreator)) {
+                // 如果没设置自定义的事件管理器创建者，用内部默认的
+                $this->eventManagerCreator = new EventManagerCreator();
+            }
+
+            // 每个authenticator独立的事件管理器
+            $eventManager = $this->eventManagerCreator->createEventManager();
+            $authenticator->setEventManager($eventManager);
         }
 
         return $authenticator;
@@ -122,9 +144,9 @@ class AuthManager
     {
         $creator = $this->userProviderCreators[$config['dirver']];
         if ($creator instanceof UserProviderCreatorInterface) {
-            $provider = $creator->createUserProvider($config);
+            $provider = $creator->createUserProvider($config['params']);
         } else {
-            $provider = call_user_func($creator, $config);
+            $provider = call_user_func($creator, $config['params']);
         }
 
         if ($provider instanceof UserProviderInterface) {
@@ -166,6 +188,17 @@ class AuthManager
         }
 
         $this->userProviderCreators[$driver] = $creator;
+    }
+
+    /**
+     * 设置事件管理器创建者
+     *
+     * @param EventManagerCreatorInterface $creator 事件管理器创建者
+     * @return void
+     */
+    public function setEventManagerCreator(EventManagerCreatorInterface $creator)
+    {
+        $this->eventManagerCreator = $creator;
     }
 
     /**
