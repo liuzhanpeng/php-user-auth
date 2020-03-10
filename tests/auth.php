@@ -5,9 +5,9 @@ return [
 
     'authenticators' => [
         'test' => [
-            'driver' => 'session',
+            'driver' => 'test_authenticator_driver',
             'provider' => [
-                'driver' => 'array',
+                'driver' => 'test_provider_driver',
                 'params' => [
                     [
                         'id' => 1,

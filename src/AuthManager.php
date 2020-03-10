@@ -9,6 +9,7 @@ use Lzpeng\Auth\Contracts\AuthEventInterface;
 use Lzpeng\Auth\Contracts\EventManagerCreatorInterface;
 use Lzpeng\Auth\Contracts\UserProviderInterface;
 use Lzpeng\Auth\Events\EventManagerCreator;
+use Lzpeng\Auth\Exceptions\ConfigException;
 use Lzpeng\Auth\Exceptions\Exception;
 
 /**
@@ -107,7 +108,7 @@ class AuthManager
     private function createAuthenticator(UserProviderInterface $userProvider, array $config)
     {
         if (!isset($this->authenticatorCreators[$config['driver']])) {
-            throw new Exception(sprintf('找不到认证器驱动[%s]', $config['driver']));
+            throw new ConfigException(sprintf('找不到认证器驱动[%s]', $config['driver']));
         }
 
         $creator = $this->authenticatorCreators[$config['driver']];
@@ -145,6 +146,10 @@ class AuthManager
      */
     private function createUserProvider(array $config)
     {
+        if (!isset($this->userProviderCreators[$config['driver']])) {
+            throw new ConfigException(sprintf('找不到用户身份提供器驱动[%s]', $config['driver']));
+        }
+
         $creator = $this->userProviderCreators[$config['driver']];
         if ($creator instanceof UserProviderCreatorInterface) {
             $provider = $creator->createUserProvider($config['params']);
