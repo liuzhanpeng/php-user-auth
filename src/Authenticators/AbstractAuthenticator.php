@@ -70,7 +70,9 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     public function login(array $credentials)
     {
         try {
-            $this->getEventManager()->trigger(self::EVENT_LOGIN_BEFORE, $credentials);
+            $this->getEventManager()->trigger(self::EVENT_LOGIN_BEFORE, [
+                'credentials' => $credentials,
+            ]);
 
             $user = $this->getUserProvider()->findByCredentials($credentials);
             if (is_null($user)) {

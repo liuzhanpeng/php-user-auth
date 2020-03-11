@@ -28,6 +28,11 @@ class AuthenticatorTest extends TestCase
         });
     }
 
+    public function tearDown(): void
+    {
+        @unlink('log');
+    }
+
     public function testCreateAuthenticator()
     {
         $authenticator = $this->authManager->create();
@@ -113,5 +118,40 @@ class AuthenticatorTest extends TestCase
         $authenticator->logout();
 
         $this->assertFalse($authenticator->isLogined());
+    }
+
+    /**
+     * @depends testCreateAuthenticator
+     */
+    public function testLoginEventClosure($authenticator)
+    {
+        $this->assertFalse($authenticator->isLogined());
+        $authenticator->getEventManager()->attachListener('login_before', function ($arg) {
+            throw new \InvalidArgumentException('error');
+        });
+
+        $this->expectException(\InvalidArgumentException::class);
+        $authenticator->login([
+            'name' => 'peng',
+            'password' => '123654',
+        ]);
+    }
+
+    /**
+     * @depends testCreateAuthenticator
+     */
+    public function testLoginEventListener($authenticator)
+    {
+        $this->assertFalse($authenticator->isLogined());
+
+        $authenticator->getEventManager()->detachListener('login_before');
+        $authenticator->getEventManager()->attachListener('login_before', new \Lzpeng\Tests\Listeners\LogCrendentials());
+
+        $authenticator->login([
+            'name' => 'peng',
+            'password' => '123654',
+        ]);
+
+        $this->assertFileExists('log');
     }
 }

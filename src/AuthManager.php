@@ -6,7 +6,9 @@ use Lzpeng\Auth\Contracts\AuthenticatorCreatorInterface;
 use Lzpeng\Auth\Contracts\UserProviderCreatorInterface;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
 use Lzpeng\Auth\Contracts\AuthEventInterface;
+use Lzpeng\Auth\Contracts\EventListenerInterface;
 use Lzpeng\Auth\Contracts\EventManagerCreatorInterface;
+use Lzpeng\Auth\Contracts\EventManagerInterface;
 use Lzpeng\Auth\Contracts\UserProviderInterface;
 use Lzpeng\Auth\Events\EventManagerCreator;
 use Lzpeng\Auth\Exceptions\ConfigException;
@@ -59,6 +61,19 @@ class AuthManager
     private $eventManagerCreator;
 
     /**
+     * 有效的认证事件
+     *
+     * @var array
+     */
+    private $availableEvents = [
+        AuthEventInterface::EVENT_LOGIN_BEFORE,
+        AuthEventInterface::EVENT_LOGIN_FAILURE,
+        AuthEventInterface::EVENT_LOGIN_SUCCESS,
+        AuthEventInterface::EVENT_LOGOUT_BEFORE,
+        AuthEventInterface::EVENT_LOGUT_AFTER
+    ];
+
+    /**
      * 构造函数
      * 
      * @param array $config 配置
@@ -104,73 +119,6 @@ class AuthManager
     }
 
     /**
-     * 创建认证器
-     *
-     * @param UserProviderInterface $userProvider 用户身份对象提供器
-     * @param array $config 认证器配置
-     * @return AuthenticatorInterface
-     * @throws Exceptions\Exception
-     */
-    private function createAuthenticator(UserProviderInterface $userProvider, array $config)
-    {
-        if (!isset($this->authenticatorCreators[$config['driver']])) {
-            throw new ConfigException(sprintf('找不到认证器驱动[%s]', $config['driver']));
-        }
-
-        $creator = $this->authenticatorCreators[$config['driver']];
-        if ($creator instanceof AuthenticatorCreatorInterface) {
-            $authenticator = $creator->createAuthenticator($config['params']);
-        } else {
-            $authenticator = call_user_func_array($creator, [$config['params']]);
-        }
-        $authenticator->setUserProvider($userProvider);
-
-        if (!$authenticator instanceof AuthenticatorInterface) {
-            throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface', $config['driver']));
-        }
-
-        if ($authenticator instanceof AuthEventInterface) {
-            if (is_null($this->eventManagerCreator)) {
-                // 如果没设置自定义的事件管理器创建者，用内部默认的
-                $this->eventManagerCreator = new EventManagerCreator();
-            }
-
-            // 每个authenticator独立的事件管理器
-            $eventManager = $this->eventManagerCreator->createEventManager();
-            $authenticator->setEventManager($eventManager);
-        }
-
-        return $authenticator;
-    }
-
-    /**
-     * 创建用户身份对象提供器
-     *
-     * @param array $config 提供器配置项
-     * @return UserProviderInterface
-     * @throws Exceptions\Exception
-     */
-    private function createUserProvider(array $config)
-    {
-        if (!isset($this->userProviderCreators[$config['driver']])) {
-            throw new ConfigException(sprintf('找不到用户身份提供器驱动[%s]', $config['driver']));
-        }
-
-        $creator = $this->userProviderCreators[$config['driver']];
-        if ($creator instanceof UserProviderCreatorInterface) {
-            $provider = $creator->createUserProvider($config['params']);
-        } else {
-            $provider = call_user_func($creator, $config['params']);
-        }
-
-        if (!$provider instanceof UserProviderInterface) {
-            throw new Exception(sprintf('用户身份对象提供器[%s]必须实现UserProviderInterface', $config['driver']));
-        }
-
-        return $provider;
-    }
-
-    /**
      * 注册认证器创建者
      *
      * @param string $driver 认证器的驱动名称; 用于区别不同的认证器
@@ -213,6 +161,110 @@ class AuthManager
     public function setEventManagerCreator(EventManagerCreatorInterface $creator)
     {
         $this->eventManagerCreator = $creator;
+    }
+
+    /**
+     * 创建认证器
+     *
+     * @param UserProviderInterface $userProvider 用户身份对象提供器
+     * @param array $config 认证器配置
+     * @return AuthenticatorInterface
+     * @throws Exceptions\Exception
+     */
+    private function createAuthenticator(UserProviderInterface $userProvider, array $config)
+    {
+        if (!isset($this->authenticatorCreators[$config['driver']])) {
+            throw new ConfigException(sprintf('找不到认证器驱动[%s]', $config['driver']));
+        }
+
+        $creator = $this->authenticatorCreators[$config['driver']];
+        if ($creator instanceof AuthenticatorCreatorInterface) {
+            $authenticator = $creator->createAuthenticator($config['params']);
+        } else {
+            $authenticator = call_user_func_array($creator, [$config['params']]);
+        }
+        $authenticator->setUserProvider($userProvider);
+
+        if (!$authenticator instanceof AuthenticatorInterface) {
+            throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface', $config['driver']));
+        }
+
+        if ($authenticator instanceof AuthEventInterface) {
+            if (is_null($this->eventManagerCreator)) {
+                // 如果没设置自定义的事件管理器创建者，用内部默认的
+                $this->eventManagerCreator = new EventManagerCreator();
+            }
+
+            // 注册事件
+            $eventManager = $this->eventManagerCreator->createEventManager();
+            if (isset($config['events'])) {
+                $this->registerEvents($eventManager, $config['events']);
+            }
+
+            // 每个authenticator独立的事件管理器
+            $authenticator->setEventManager($eventManager);
+        }
+
+        return $authenticator;
+    }
+
+    /**
+     * 创建用户身份对象提供器
+     *
+     * @param array $config 提供器配置项
+     * @return UserProviderInterface
+     * @throws Exceptions\Exception
+     */
+    private function createUserProvider(array $config)
+    {
+        if (!isset($this->userProviderCreators[$config['driver']])) {
+            throw new ConfigException(sprintf('找不到用户身份提供器驱动[%s]', $config['driver']));
+        }
+
+        $creator = $this->userProviderCreators[$config['driver']];
+        if ($creator instanceof UserProviderCreatorInterface) {
+            $provider = $creator->createUserProvider($config['params']);
+        } else {
+            $provider = call_user_func($creator, $config['params']);
+        }
+
+        if (!$provider instanceof UserProviderInterface) {
+            throw new Exception(sprintf('用户身份对象提供器[%s]必须实现UserProviderInterface', $config['driver']));
+        }
+
+        return $provider;
+    }
+
+    /**
+     * 注册事件
+     *
+     * @param EventManagerInterface $eventManager 事件管理器
+     * @param array $config 配置
+     * @return void
+     */
+    private function registerEvents(EventManagerInterface $eventManager, array $config)
+    {
+        foreach ($config as $event => $listeners) {
+            if (!in_array($event, $this->availableEvents)) {
+                throw new ConfigException(sprintf('不支持的认证事件[%s]', $event));
+            }
+
+            foreach ($listeners as $listener) {
+                if (is_callable($listener)) {
+                    $eventManager->attachListener($event, $listener);
+                } elseif (is_string($listener)) {
+                    try {
+                        $instance = new $listener();
+                    } catch (\Error $ex) {
+                        throw new Exception(sprintf('无效的事件监听器[%s]', $listener));
+                    }
+
+                    $eventManager->attachListener($event, $instance);
+                } else {
+                    throw new Exception(sprintf('事件监听器[%s]必须实现\Lzpeng\Auth\Contracts\EventListenerInterface接口或是callable对象', $listener));
+                }
+            }
+        }
     }
 
     /**

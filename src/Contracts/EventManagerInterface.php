@@ -14,10 +14,9 @@ interface EventManagerInterface
      *
      * @param string $event 事件标识
      * @param EventListenerInterface|callable $listener 事件监听器
-     * @param integer $priority 优先级; 分发时会按优化级顺序执行
      * @return void
      */
-    public function attachListener(string $event, $listener, int $priority = 0);
+    public function attachListener(string $event, $listener);
 
     /**
      * 为指定事件移除监听器
@@ -37,22 +36,4 @@ interface EventManagerInterface
      * @throws \Lzpeng\Auth\Exceptions\AuthException
      */
     public function trigger(string $event, $arg);
-
-    /**
-     * 获取所有事件监听器列表
-     * 
-     * 返回格式：
-     * 
-     * [
-     *      'login_before' => [
-     *          [
-     *              'listener' => '监听器',
-     *              'priority' => 0,  
-     *          ], ...
-     *      ], ...
-     * ]
-     *
-     * @return array
-     */
-    public function getListeners();
 }

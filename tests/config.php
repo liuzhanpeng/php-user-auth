@@ -26,6 +26,11 @@ return [
             'params' => [
                 'session_key' => 'UserIdentity',
             ],
+            'events' => [
+                // 'login_before' => [
+                //     Lzpeng\Tests\Listeners\LogCrendentials::class,
+                // ]
+            ]
         ],
         'test2' => [
             'driver' => 'test_authenticator_driver',

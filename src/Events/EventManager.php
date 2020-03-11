@@ -19,10 +19,9 @@ class EventManager implements EventManagerInterface
      * 
      * [
      *      'login_before' => [
-     *          [
-     *              'listener' => 'xxxx',
-     *              'priority' => 100,
-     *          ], ...
+     *          $listener1, 
+     *          $listener2,
+     *          ... 
      *      ], ...
      * ]
      *
@@ -33,7 +32,7 @@ class EventManager implements EventManagerInterface
     /**
      * @inheritDoc
      */
-    public function attachListener(string $event, $listener, int $priority = 0)
+    public function attachListener(string $event, $listener)
     {
         if (!$listener instanceof EventListenerInterface && !is_callable($listener)) {
             throw new EventException('事件监听器必实现ListenerInterface或是callable对象');
@@ -43,15 +42,7 @@ class EventManager implements EventManagerInterface
             $this->events[$event] = [];
         }
 
-        $this->events[$event][] = [
-            'listener' => $listener,
-            'priority' => $priority,
-        ];
-
-        // 按优化级排序
-        usort($this->events[$event], function ($a, $b) {
-            return ($a['priority'] <= $b['priority']) ? -1 : 1;
-        });
+        $this->events[$event][] = $listener;
     }
 
     /**
@@ -65,7 +56,7 @@ class EventManager implements EventManagerInterface
         }
 
         foreach ($this->events[$event] as $key => $item) {
-            if ($item['listener'] === $listener) {
+            if ($item === $listener) {
                 unset($this->events[$event][$key]);
                 break;
             }
@@ -81,8 +72,7 @@ class EventManager implements EventManagerInterface
             return;
         }
 
-        foreach ($this->events[$event] as $item) {
-            $listener = $item['listener'];
+        foreach ($this->events[$event] as $listener) {
             if ($listener instanceof EventListenerInterface) {
                 $result = $listener->handle($arg);
             } else {
@@ -94,13 +84,5 @@ class EventManager implements EventManagerInterface
                 break;
             }
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getListeners()
-    {
-        return $this->events;
     }
 }
