@@ -6,7 +6,6 @@ use Lzpeng\Auth\Contracts\AuthenticatorCreatorInterface;
 use Lzpeng\Auth\Contracts\UserProviderCreatorInterface;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
 use Lzpeng\Auth\Contracts\AuthEventInterface;
-use Lzpeng\Auth\Contracts\EventListenerInterface;
 use Lzpeng\Auth\Contracts\EventManagerCreatorInterface;
 use Lzpeng\Auth\Contracts\EventManagerInterface;
 use Lzpeng\Auth\Contracts\UserProviderInterface;

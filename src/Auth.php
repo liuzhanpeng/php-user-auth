@@ -3,7 +3,6 @@
 namespace Lzpeng\Auth;
 
 use Lzpeng\Auth\Authenticators\NativeSessionAuthenticator;
-use Lzpeng\Auth\Contracts\UserProviderInterface;
 use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
 
 /**
