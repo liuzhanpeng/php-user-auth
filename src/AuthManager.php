@@ -180,7 +180,7 @@ class AuthManager
         if ($creator instanceof AuthenticatorCreatorInterface) {
             $authenticator = $creator->createAuthenticator($config['params']);
         } else {
-            $authenticator = call_user_func_array($creator, [$config['params']]);
+            $authenticator = call_user_func($creator, $config['params']);
         }
         $authenticator->setUserProvider($userProvider);
 
