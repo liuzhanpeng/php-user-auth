@@ -127,10 +127,12 @@ class AuthenticatorTest extends TestCase
     {
         $this->assertFalse($authenticator->isLogined());
         $authenticator->getEventManager()->attachListener('login_before', function ($arg) {
-            throw new \InvalidArgumentException('error');
+            throw new AuthException('testerror');
         });
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(AuthException::class);
+        $this->expectExceptionMessage('testerror');
+
         $authenticator->login([
             'name' => 'peng',
             'password' => '123654',
