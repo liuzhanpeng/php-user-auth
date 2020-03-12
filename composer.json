@@ -1,6 +1,6 @@
 {
     "name": "peng/php-user-auth",
-    "description": "php用户认证库，提供一致性的核心api, 方便整合到各个框架中。",
+    "description": "通用的php用户认证核心, 方便在各个框架在其之上实现自己的用户认证模块。",
     "type": "library",
     "license": "MIT",
     "authors": [{

@@ -30,7 +30,8 @@ return [
                 // 'login_before' => [
                 //     Lzpeng\Tests\Listeners\LogCrendentials::class,
                 // ]
-            ]
+            ],
+            // 'access' => 'test',
         ],
         'test2' => [
             'driver' => 'test_authenticator_driver',
