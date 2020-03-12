@@ -4,10 +4,12 @@ namespace Lzpeng\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
+use Lzpeng\Auth\Contracts\AccessInterface;
 use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
 use Lzpeng\Auth\Contracts\UserInterface;
 use Lzpeng\Auth\Exceptions\AuthException;
+use Lzpeng\Tests\Access\ArrayAccessResourceProvider;
 use Lzpeng\Tests\Authenticators\MemoryAuthenticator;
 
 class AuthenticatorTest extends TestCase
@@ -155,5 +157,24 @@ class AuthenticatorTest extends TestCase
         ]);
 
         $this->assertFileExists('log');
+    }
+
+    public function testAllow()
+    {
+        $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider([
+            'resource1', 'resource2',
+        ]));
+
+        $authenticator = $this->authManager->create('test3');
+
+        $this->assertInstanceOf(AuthenticatorInterface::class, $authenticator);
+        $this->assertInstanceOf(AccessInterface::class, $authenticator);
+
+        $result = $authenticator->allow('resource1');
+        $this->assertTrue($result);
+        $result = $authenticator->allow('not my resource');
+        $this->assertFalse($result);
+
+        return $authenticator;
     }
 }

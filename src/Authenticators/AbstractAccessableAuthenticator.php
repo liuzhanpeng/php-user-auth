@@ -39,7 +39,7 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
     /**
      * @inheritDoc
      */
-    public function allow(string $resourceId)
+    public function allow($resourceId)
     {
         $provider = $this->getAccessSourceProvider();
         if (is_null($provider)) {

@@ -225,16 +225,17 @@ class AuthManager
             $authenticator->setEventManager($eventManager);
         }
 
-        if (isset($config['access'])) {
+        if (isset($config['access']) && isset($config['access']['driver'])) {
             if (!$authenticator instanceof AccessInterface) {
                 throw new Exception(sprintf('认证器[%s]未实现AccessInterface接口', $config['driver']));
             }
 
-            if (!isset($this->accessResourceProviders[$config['access']])) {
-                throw new Exception(sprintf('未注册权限资源提供器[%s]', $config['access']));
+            $driver = $config['access']['driver'];
+            if (!isset($this->accessResourceProviders[$driver])) {
+                throw new Exception(sprintf('未注册权限资源提供器[%s]', $driver));
             }
 
-            $authenticator->setAccessSourceProvider($this->accessResourceProviders[$config['access']]);
+            $authenticator->setAccessSourceProvider($this->accessResourceProviders[$driver]);
         }
 
         return $authenticator;

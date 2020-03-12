@@ -1,41 +1,35 @@
 <?php
 
-namespace Lzpeng\Auth\Users;
+namespace Lzpeng\Auth\Access;
 
 use ArrayAccess;
-use Lzpeng\Auth\Contracts\UserInterface;
+use Lzpeng\Auth\Contracts\AccessResourceInterface;
 
 /**
- * 通用用户类
+ * 权限资源对象
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-class GenericUser implements UserInterface, ArrayAccess
+class Resource implements AccessResourceInterface, ArrayAccess
 {
     /**
-     * 用户数据
+     * 权限资源标识
+     *
+     * @var mixed
+     */
+    public $id;
+
+    /**
+     * 数据
      *
      * @var array
      */
-    private $data;
+    public $data;
 
-    /**
-     * 用户标识对应key
-     *
-     * @var string
-     */
-    private $idKey;
-
-    /**
-     * 构造函数
-     *
-     * @param array $data 用户数据
-     * @param string $idKey 用户标识对应key
-     */
-    public function __construct(array $data, string $idKey = 'id')
+    public function __construct($id, array $data = [])
     {
+        $this->id = $id;
         $this->data = $data;
-        $this->idKey = $idKey;
     }
 
     /**
@@ -43,7 +37,7 @@ class GenericUser implements UserInterface, ArrayAccess
      */
     public function id()
     {
-        return $this->data[$this->idKey];
+        return $this->id;
     }
 
     /**

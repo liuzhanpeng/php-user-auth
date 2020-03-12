@@ -27,8 +27,8 @@ interface AccessInterface
     /**
      * 是否允许访问指定权限资源
      *
-     * @param string $resourceId 资源标识
+     * @param mixed $resourceId 资源标识
      * @return boolean
      */
-    public function allow(string $resourceId);
+    public function allow($resourceId);
 }

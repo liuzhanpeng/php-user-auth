@@ -12,7 +12,7 @@ interface AccessResourceInterface
     /**
      * 返回资源标识
      *
-     * @return string
+     * @return mixed
      */
     public function id();
 }
