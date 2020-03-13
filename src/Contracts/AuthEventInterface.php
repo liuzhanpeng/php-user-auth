@@ -36,6 +36,16 @@ interface AuthEventInterface
     const EVENT_LOGUT_AFTER = 'logout_after';
 
     /**
+     * 访问权限资源前事件
+     */
+    const EVENT_ACCESS_BEFORE = 'access_before';
+
+    /**
+     * 访问权限资源后事件
+     */
+    const EVENT_ACCESS_AFTER = 'access_after';
+
+    /**
      * 设置事件管理器
      *
      * @param EventManagerInterface $eventManager 事件管理器

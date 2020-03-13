@@ -16,6 +16,13 @@ use Lzpeng\Auth\Exceptions\InvalidCredentialException;
 abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEventInterface
 {
     /**
+     * 用户身份对象
+     *
+     * @var UserInterface
+     */
+    protected $user;
+
+    /**
      * 事件管理器
      *
      * @var \Lzpeng\Auth\Contracts\EventManagerInterface
@@ -82,6 +89,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             $this->getUserProvider()->validateCredentials($user, $credentials);
 
             $result = $this->storeUser($user);
+            $this->user = $user;
 
             $this->getEventManager()->trigger(self::EVENT_LOGIN_SUCCESS, [
                 'credentials' => $credentials,

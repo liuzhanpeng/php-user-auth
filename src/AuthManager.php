@@ -2,6 +2,8 @@
 
 namespace Lzpeng\Auth;
 
+use Lzpeng\Auth\Contracts\AccessInterface;
+use Lzpeng\Auth\Contracts\AccessResourceProviderInterface;
 use Lzpeng\Auth\Contracts\AuthenticatorCreatorInterface;
 use Lzpeng\Auth\Contracts\UserProviderCreatorInterface;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
@@ -71,6 +73,13 @@ class AuthManager
         AuthEventInterface::EVENT_LOGOUT_BEFORE,
         AuthEventInterface::EVENT_LOGUT_AFTER
     ];
+
+    /**
+     * 访问资源提供器列表
+     *
+     * @var array
+     */
+    private $accessResourceProviders = [];
 
     /**
      * 构造函数
@@ -163,6 +172,18 @@ class AuthManager
     }
 
     /**
+     * 注册权限资源提供器
+     *
+     * @param string $driver 驱动名称
+     * @param AccessResourceProviderInterface $provider 权限资源提供器
+     * @return void
+     */
+    public function registerAccessResourceProvider(string $driver, AccessResourceProviderInterface $provider)
+    {
+        $this->accessResourceProviders[$driver] = $provider;
+    }
+
+    /**
      * 创建认证器
      *
      * @param UserProviderInterface $userProvider 用户身份对象提供器
@@ -185,7 +206,7 @@ class AuthManager
         $authenticator->setUserProvider($userProvider);
 
         if (!$authenticator instanceof AuthenticatorInterface) {
-            throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface', $config['driver']));
+            throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface接口', $config['driver']));
         }
 
         if ($authenticator instanceof AuthEventInterface) {
@@ -202,6 +223,19 @@ class AuthManager
 
             // 每个authenticator独立的事件管理器
             $authenticator->setEventManager($eventManager);
+        }
+
+        if (isset($config['access']) && isset($config['access']['driver'])) {
+            if (!$authenticator instanceof AccessInterface) {
+                throw new Exception(sprintf('认证器[%s]未实现AccessInterface接口', $config['driver']));
+            }
+
+            $driver = $config['access']['driver'];
+            if (!isset($this->accessResourceProviders[$driver])) {
+                throw new Exception(sprintf('未注册权限资源提供器[%s]', $driver));
+            }
+
+            $authenticator->setAccessSourceProvider($this->accessResourceProviders[$driver]);
         }
 
         return $authenticator;

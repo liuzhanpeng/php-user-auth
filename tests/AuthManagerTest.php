@@ -2,7 +2,6 @@
 
 namespace Lzpeng\Tests;
 
-use Lzpeng\Auth\Authenticators\NativeSessionAuthenticator;
 use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
@@ -12,6 +11,7 @@ use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
 use Lzpeng\Tests\Authenticators\MemoryAuthenticator;
 use Lzpeng\Tests\Creators\NativeArrayUserProviderCreator;
 use Lzpeng\Tests\Creators\MemoryAuthenticatorCreator;
+use Lzpeng\Tests\Access\ArrayAccessResourceProvider;
 
 class AuthManagerTest extends TestCase
 {
@@ -64,6 +64,9 @@ class AuthManagerTest extends TestCase
     public function testCreateWithAuthenticatorByCreator($authManager)
     {
         $authManager->registerAuthenticatorCreator('test_authenticator_driver', new MemoryAuthenticatorCreator());
+        $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider([
+            'resource1', 'resource2',
+        ]));
 
         return $authManager;
     }
@@ -77,6 +80,9 @@ class AuthManagerTest extends TestCase
             return new MemoryAuthenticator($config['session_key']);
         });
 
+        $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider([
+            'resource1', 'resource2',
+        ]));
         return $authManager;
     }
 
@@ -92,6 +98,7 @@ class AuthManagerTest extends TestCase
 
         $authenticator2 = $authManager->create('test');
         $this->assertSame($authenticator1, $authenticator2, '单个认证项产生了多个认证器实例');
+
 
         return $authenticator1;
     }

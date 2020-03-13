@@ -4,10 +4,13 @@ namespace Lzpeng\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
+use Lzpeng\Auth\Contracts\AccessInterface;
 use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
 use Lzpeng\Auth\Contracts\UserInterface;
+use Lzpeng\Auth\Exceptions\AccessException;
 use Lzpeng\Auth\Exceptions\AuthException;
+use Lzpeng\Tests\Access\ArrayAccessResourceProvider;
 use Lzpeng\Tests\Authenticators\MemoryAuthenticator;
 
 class AuthenticatorTest extends TestCase
@@ -31,6 +34,7 @@ class AuthenticatorTest extends TestCase
     public function tearDown(): void
     {
         @unlink('log');
+        @unlink('access_log');
     }
 
     public function testCreateAuthenticator()
@@ -155,5 +159,62 @@ class AuthenticatorTest extends TestCase
         ]);
 
         $this->assertFileExists('log');
+    }
+
+    public function testIsAllowWithoutLogin()
+    {
+        $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
+
+        $authenticator = $this->authManager->create('test3');
+
+        $this->expectException(AccessException::class);
+        $result = $authenticator->isAllowed('test_resource1');
+        $this->assertTrue($result);
+
+        return $authenticator;
+    }
+
+    public function testIsAllow()
+    {
+        $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
+
+        $authenticator = $this->authManager->create('test3');
+
+        $authenticator->login([
+            'name' => 'peng',
+            'password' => 123654,
+        ]);
+
+        $result = $authenticator->isAllowed('test_resource1');
+        $this->assertTrue($result);
+        $result = $authenticator->isAllowed('test_resource2');
+        $this->assertTrue($result);
+        $result = $authenticator->isAllowed('not my resource');
+        $this->assertFalse($result);
+    }
+
+    public function testAccessEvent()
+    {
+        $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
+
+        $authenticator = $this->authManager->create('test3');
+
+        $authenticator->getEventManager()->detachListener('access_after');
+
+        $authenticator->getEventManager()->attachListener('access_after', function ($params) {
+            if ($params['isAllowed'] == 0) {
+                file_put_contents('access_log', sprintf('%s: %s', $params['user']->name, $params['resourceId']));
+            }
+        });
+
+        $authenticator->login([
+            'name' => 'peng',
+            'password' => 123654,
+        ]);
+
+        $result = $authenticator->isAllowed('test_resourcexxxxxx');
+        $this->assertFalse($result);
+
+        $this->assertFileExists('access_log');
     }
 }

@@ -2,11 +2,11 @@
 
 namespace Lzpeng\Tests\Authenticators;
 
-use Lzpeng\Auth\Authenticators\AbstractAuthenticator;
+use Lzpeng\Auth\Authenticators\AbstractAccessableAuthenticator;
 
 use Lzpeng\Auth\Contracts\UserInterface;
 
-class MemoryAuthenticator extends AbstractAuthenticator
+class MemoryAuthenticator extends AbstractAccessableAuthenticator
 {
     /**
      * 会话数据
