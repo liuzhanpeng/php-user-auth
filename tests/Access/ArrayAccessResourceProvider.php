@@ -9,16 +9,29 @@ class ArrayAccessResourceProvider implements AccessResourceProviderInterface
 {
     private $config;
 
-    public function __construct(array $config)
+    public function __construct()
     {
-        $this->config = $config;
+        $this->config = [
+            [
+                'userId' => 1,
+                'resources' => ['test_resource1', 'test_resource2'],
+            ],
+            [
+                'userId' => 2,
+                'resources' => ['test_resource2'],
+            ]
+        ];
     }
 
-    public function getAccessResources()
+    public function getAccessResources($user)
     {
         $list = [];
         foreach ($this->config as $item) {
-            $list[] = new Resource($item);
+            if ($item['userId'] === $user->id()) {
+                foreach ($item['resources'] as $resource) {
+                    $list[] = new Resource($resource);
+                }
+            }
         }
 
         return $list;

@@ -29,6 +29,7 @@ interface AccessInterface
      *
      * @param mixed $resourceId 资源标识
      * @return boolean
+     * @throws \Lzpeng\Auth\Exceptions\AccessException
      */
-    public function allow($resourceId);
+    public function isAllowed($resourceId);
 }

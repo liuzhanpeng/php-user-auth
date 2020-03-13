@@ -12,7 +12,8 @@ interface AccessResourceProviderInterface
     /**
      * 返回资源列表
      *
+     * @param UserInterface $user 用户身份对象
      * @return array
      */
-    public function getAccessResources();
+    public function getAccessResources($user);
 }
