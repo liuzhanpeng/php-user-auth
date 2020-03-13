@@ -89,6 +89,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             $this->getUserProvider()->validateCredentials($user, $credentials);
 
             $result = $this->storeUser($user);
+            $this->user = $user;
 
             $this->getEventManager()->trigger(self::EVENT_LOGIN_SUCCESS, [
                 'credentials' => $credentials,

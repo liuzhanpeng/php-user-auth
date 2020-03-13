@@ -48,7 +48,7 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
 
         $this->getEventManager()->trigger(self::EVENT_ACCESS_BEFORE, [
             'resourceId' => $resourceId,
-            'user' => $this->user,
+            'user' => $this->user(),
         ]);
 
         $provider = $this->getAccessSourceProvider();
@@ -57,7 +57,7 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
         }
 
         $result = false;
-        foreach ($provider->getAccessResources($this->user) as $resource) {
+        foreach ($provider->getAccessResources($this->user()) as $resource) {
             if ($resource->id() === $resourceId) {
                 $result = true;
                 break;
@@ -66,7 +66,7 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
 
         $this->getEventManager()->trigger(self::EVENT_ACCESS_AFTER, [
             'resourceId' => $resourceId,
-            'user' => $this->user,
+            'user' => $this->user(),
             'isAllowed' => $result,
         ]);
 
