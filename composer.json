@@ -1,5 +1,5 @@
 {
-    "name": "peng/php-user-auth",
+    "name": "lzpeng/php-user-auth",
     "description": "用户认证核心, 方便在各个框架在其之上实现自己的用户认证模块。",
     "type": "library",
     "license": "MIT",
