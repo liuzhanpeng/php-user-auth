@@ -20,7 +20,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Lzpeng\\Tests\\": "tests/"
+            "Lzpeng\\Auth\\Tests\\": "tests/"
         }
     }
 }

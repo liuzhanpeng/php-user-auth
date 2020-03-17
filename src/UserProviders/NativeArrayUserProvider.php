@@ -2,9 +2,9 @@
 
 namespace Lzpeng\Auth\UserProviders;
 
-use Lzpeng\Auth\Contracts\UserProviderInterface;
-use Lzpeng\Auth\Contracts\UserInterface;
-use Lzpeng\Auth\Exceptions\InvalidCredentialException;
+use Lzpeng\Auth\UserProviderInterface;
+use Lzpeng\Auth\UserInterface;
+use Lzpeng\Auth\Exception\InvalidCredentialException;
 use Lzpeng\Auth\Users\GenericUser;
 
 /**

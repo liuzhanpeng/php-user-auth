@@ -1,17 +1,14 @@
 <?php
 
-namespace Lzpeng\Tests;
+namespace Lzpeng\Auth\Tests;
 
+use Lzpeng\Auth\AuthenticatorInterface;
 use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
-use Lzpeng\Auth\Contracts\AuthenticatorInterface;
-use Lzpeng\Auth\Events\EventManagerCreator;
-use Lzpeng\Auth\Exceptions\ConfigException;
+use Lzpeng\Auth\Event\EventManagerCreator;
+use Lzpeng\Auth\Exception\ConfigException;
 use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
-use Lzpeng\Tests\Authenticators\MemoryAuthenticator;
-use Lzpeng\Tests\Creators\NativeArrayUserProviderCreator;
-use Lzpeng\Tests\Creators\MemoryAuthenticatorCreator;
-use Lzpeng\Tests\Access\ArrayAccessResourceProvider;
+use Lzpeng\Auth\UserProviders\NativeArrayUserProviderCreator;
 
 class AuthManagerTest extends TestCase
 {
@@ -23,14 +20,21 @@ class AuthManagerTest extends TestCase
         $this->authManager = new AuthManager($config);
     }
 
-    public function testRegisterUserProviderCreatorByCreator()
+    public function testCreateWithoutRegisterUserProvider()
     {
-        $this->authManager->registerUserProviderCreator('test_provider_driver', new NativeArrayUserProviderCreator());
+        $this->expectException(ConfigException::class);
+        $this->expectExceptionMessage('找不到用户身份提供器驱动[test_provider_driver]');
+        $this->authManager->create();
+    }
+
+    public function testRegisterUserProviderByCreator()
+    {
+        $this->authManager->registerUserProviderCreator('test_provider_dirver', new NativeArrayUserProviderCreator());
 
         return $this->authManager;
     }
 
-    public function testRegisterUserProviderCreatorByClosure()
+    public function testRegisterUserProviderByClosure()
     {
         $this->authManager->registerUserProviderCreator('test_provider_driver', function ($config) {
             return new NativeArrayUserProvider($config);
@@ -39,86 +43,40 @@ class AuthManagerTest extends TestCase
         return $this->authManager;
     }
 
-    public function testCreateWithoutRegisterUserProvider()
-    {
-        $this->expectException(ConfigException::class);
-        $this->expectExceptionMessage('找不到用户身份提供器驱动[test_provider_driver]');
-
-        $this->authManager->create();
-    }
-
     /**
-     * @depends testRegisterUserProviderCreatorByClosure
+     * @depends testRegisterUserProviderByClosure
      */
     public function testCreateWithoutRegisterAuthenticator($authManager)
     {
         $this->expectException(ConfigException::class);
         $this->expectExceptionMessage('找不到认证器驱动[test_authenticator_driver]');
-
         $authManager->create();
     }
 
     /**
-     * @depends testRegisterUserProviderCreatorByCreator
+     * @depends testRegisterUserProviderByClosure
      */
-    public function testCreateWithAuthenticatorByCreator($authManager)
+    public function testRegisterAuthenticatorByCreator($authManager)
     {
         $authManager->registerAuthenticatorCreator('test_authenticator_driver', new MemoryAuthenticatorCreator());
-        $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider([
-            'resource1', 'resource2',
-        ]));
 
         return $authManager;
     }
 
     /**
-     * @depends testRegisterUserProviderCreatorByClosure
+     * @depends testRegisterUserProviderByClosure
      */
-    public function testCreateWithAuthenticatorClosure($authManager)
+    public function testRegisterAuthenticatorByClosure($authManager)
     {
         $authManager->registerAuthenticatorCreator('test_authenticator_driver', function ($config) {
             return new MemoryAuthenticator($config['session_key']);
         });
 
-        $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider([
-            'resource1', 'resource2',
-        ]));
         return $authManager;
     }
 
     /**
-     * @depends testCreateWithAuthenticatorClosure
-     */
-    public function testCreate($authManager)
-    {
-        $authenticator1 = $authManager->create();
-        $this->assertInstanceOf(AuthenticatorInterface::class, $authenticator1);
-
-        $this->assertFalse($authenticator1->isLogined());
-
-        $authenticator2 = $authManager->create('test');
-        $this->assertSame($authenticator1, $authenticator2, '单个认证项产生了多个认证器实例');
-
-
-        return $authenticator1;
-    }
-
-    /**
-     * @depends testCreateWithAuthenticatorByCreator
-     */
-    public function testCreateWithCreator($authManager)
-    {
-        $authenticator1 = $authManager->create();
-        $this->assertInstanceOf(AuthenticatorInterface::class, $authenticator1);
-
-        $authenticator2 = $authManager->create('test');
-        $this->assertSame($authenticator1, $authenticator2, '单个认证项产生了多个认证器实例');
-
-        return $authenticator1;
-    }
-
-    /**
-     * @depends testCreateWithAuthenticatorClosure
+     * @depends testRegisterAuthenticatorByClosure
      */
     public function testCreateWithWrongName($authManager)
     {
@@ -127,13 +85,36 @@ class AuthManagerTest extends TestCase
     }
 
     /**
-     * @depends testCreateWithAuthenticatorClosure
+     * @depends testRegisterAuthenticatorByClosure
+     */
+    public function testCreate($authManager)
+    {
+        $authenticator = $authManager->create();
+        $this->assertInstanceOf(AuthenticatorInterface::class, $authenticator);
+
+        $authenticator2 = $authManager->create('test');
+        $this->assertSame($authenticator, $authenticator2);
+    }
+
+    /**
+     * @depends testRegisterAuthenticatorByClosure
      */
     public function testCreateWithName($authManager)
     {
-        $authenticator = $authManager->create('test2');
-
+        $authenticator = $authManager->create('test');
         $this->assertInstanceOf(AuthenticatorInterface::class, $authenticator);
+    }
+
+    /**
+     * @depends testRegisterAuthenticatorByClosure
+     */
+    public function testCreateMultiple($authManager)
+    {
+        $authenticator1 = $authManager->create('test');
+        $this->assertInstanceOf(AuthenticatorInterface::class, $authenticator1);
+
+        $authenticator2 = $authManager->create('test2');
+        $this->assertInstanceOf(AuthenticatorInterface::class, $authenticator2);
     }
 
     public function testSetEventManagerCreator()

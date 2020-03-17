@@ -1,17 +1,15 @@
 <?php
 
-namespace Lzpeng\Tests;
+namespace Lzpeng\Auth\Tests;
 
+use Lzpeng\Auth\AuthenticatorInterface;
 use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
-use Lzpeng\Auth\Contracts\AccessInterface;
+use Lzpeng\Auth\Exception\AccessException;
+use Lzpeng\Auth\Exception\AuthException;
+use Lzpeng\Auth\UserInterface;
 use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
-use Lzpeng\Auth\Contracts\AuthenticatorInterface;
-use Lzpeng\Auth\Contracts\UserInterface;
-use Lzpeng\Auth\Exceptions\AccessException;
-use Lzpeng\Auth\Exceptions\AuthException;
-use Lzpeng\Tests\Access\ArrayAccessResourceProvider;
-use Lzpeng\Tests\Authenticators\MemoryAuthenticator;
+use Lzpeng\Auth\Users\GenericUser;
 
 class AuthenticatorTest extends TestCase
 {
@@ -33,7 +31,6 @@ class AuthenticatorTest extends TestCase
 
     public function tearDown(): void
     {
-        @unlink('log');
         @unlink('access_log');
     }
 
@@ -122,15 +119,30 @@ class AuthenticatorTest extends TestCase
         $authenticator->logout();
 
         $this->assertFalse($authenticator->isLogined());
+        $this->assertNull($authenticator->id());
+        $this->assertNull($authenticator->user());
     }
 
     /**
      * @depends testCreateAuthenticator
      */
-    public function testLoginEventClosure($authenticator)
+    public function testSetUser($authenticator)
     {
         $this->assertFalse($authenticator->isLogined());
-        $authenticator->getEventManager()->attachListener('login_before', function ($arg) {
+
+        $authenticator->setUser(new GenericUser([
+            'id' => 1,
+            'name' => 'peng',
+        ]));
+
+        $this->assertTrue($authenticator->isLogined());
+    }
+
+    public function testLoginEventByClosure()
+    {
+        $authenticator = $this->authManager->create();
+        $this->assertFalse($authenticator->isLogined());
+        $authenticator->getEventManager()->addListener('login_before', function ($arg) {
             throw new AuthException('testerror');
         });
 
@@ -143,26 +155,12 @@ class AuthenticatorTest extends TestCase
         ]);
     }
 
-    /**
-     * @depends testCreateAuthenticator
-     */
-    public function testLoginEventListener($authenticator)
-    {
-        $this->assertFalse($authenticator->isLogined());
-
-        $authenticator->getEventManager()->detachListener('login_before');
-        $authenticator->getEventManager()->attachListener('login_before', new \Lzpeng\Tests\Listeners\LogCrendentials());
-
-        $authenticator->login([
-            'name' => 'peng',
-            'password' => '123654',
-        ]);
-
-        $this->assertFileExists('log');
-    }
-
     public function testIsAllowWithoutLogin()
     {
+        $this->authManager->registerAuthenticatorCreator('test_authenticator_driver', function ($config) {
+            return new MemoryAccessableAuthenticator($config['session_key']);
+        });
+
         $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
 
         $authenticator = $this->authManager->create('test3');
@@ -176,6 +174,10 @@ class AuthenticatorTest extends TestCase
 
     public function testIsAllow()
     {
+        $this->authManager->registerAuthenticatorCreator('test_authenticator_driver', function ($config) {
+            return new MemoryAccessableAuthenticator($config['session_key']);
+        });
+
         $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
 
         $authenticator = $this->authManager->create('test3');
@@ -195,13 +197,17 @@ class AuthenticatorTest extends TestCase
 
     public function testAccessEvent()
     {
+        $this->authManager->registerAuthenticatorCreator('test_authenticator_driver', function ($config) {
+            return new MemoryAccessableAuthenticator($config['session_key']);
+        });
+
         $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
 
         $authenticator = $this->authManager->create('test3');
 
-        $authenticator->getEventManager()->detachListener('access_after');
+        $authenticator->getEventManager()->removeListener('access_after');
 
-        $authenticator->getEventManager()->attachListener('access_after', function ($params) {
+        $authenticator->getEventManager()->addListener('access_after', function ($params) {
             if ($params['isAllowed'] == 0) {
                 file_put_contents('access_log', sprintf('%s: %s', $params['user']->name, $params['resourceId']));
             }

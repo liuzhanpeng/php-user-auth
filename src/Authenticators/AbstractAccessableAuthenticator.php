@@ -2,11 +2,11 @@
 
 namespace Lzpeng\Auth\Authenticators;
 
-use Lzpeng\Auth\Contracts\AccessInterface;
-use Lzpeng\Auth\Contracts\AccessResourceProviderInterface;
-use Lzpeng\Auth\Events\EventArg;
-use Lzpeng\Auth\Exceptions\AccessException;
-use Lzpeng\Auth\Exceptions\Exception;
+use Lzpeng\Auth\Access\AccessInterface;
+use Lzpeng\Auth\Access\AccessResourceProviderInterface;
+use Lzpeng\Auth\Event\Event;
+use Lzpeng\Auth\Exception\AccessException;
+use Lzpeng\Auth\Exception\Exception;
 
 /**
  * 实现带权限资源访问功能的抽象认证器
@@ -18,7 +18,7 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
     /**
      * 权限资源提供器
      *
-     * @var \Lzpeng\Auth\Contracts\AccessResourceProviderInterface
+     * @var \Lzpeng\Auth\Access\AccessResourceProviderInterface
      */
     private $accessResourceProvider;
 
@@ -47,7 +47,7 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
             throw new AccessException('用户还未登录认证');
         }
 
-        $this->getEventManager()->trigger(self::EVENT_ACCESS_BEFORE, new EventArg([
+        $this->getEventManager()->dispatch(self::EVENT_ACCESS_BEFORE, new Event([
             'resourceId' => $resourceId,
             'user' => $this->user(),
         ]));
@@ -65,7 +65,7 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
             }
         }
 
-        $this->getEventManager()->trigger(self::EVENT_ACCESS_AFTER, new EventArg([
+        $this->getEventManager()->dispatch(self::EVENT_ACCESS_AFTER, new Event([
             'resourceId' => $resourceId,
             'user' => $this->user(),
             'isAllowed' => $result,

@@ -1,9 +1,9 @@
 <?php
 
-namespace Lzpeng\Tests\Access;
+namespace Lzpeng\Auth\Tests;
 
 use Lzpeng\Auth\Access\Resource;
-use Lzpeng\Auth\Contracts\AccessResourceProviderInterface;
+use Lzpeng\Auth\Access\AccessResourceProviderInterface;
 
 class ArrayAccessResourceProvider implements AccessResourceProviderInterface
 {

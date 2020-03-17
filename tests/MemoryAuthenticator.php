@@ -1,16 +1,19 @@
 <?php
 
-namespace Lzpeng\Auth\Authenticators;
+namespace Lzpeng\Auth\Tests;
 
+use Lzpeng\Auth\Authenticators\AbstractAuthenticator;
 use Lzpeng\Auth\UserInterface;
 
-/**
- * 基于原生session的认证器
- * 
- * @author lzpeng <liuzhanpeng@gmail.com>
- */
-class NativeSessionAuthenticator extends AbstractAuthenticator
+class MemoryAuthenticator extends AbstractAuthenticator
 {
+    /**
+     * 会话数据
+     *
+     * @var array
+     */
+    private $sessions = [];
+
     /**
      * 会话key
      *
@@ -21,7 +24,6 @@ class NativeSessionAuthenticator extends AbstractAuthenticator
     public function __construct(string $sessionKey)
     {
         $this->sessionKey = $sessionKey;
-        session_start();
     }
 
     /**
@@ -29,7 +31,7 @@ class NativeSessionAuthenticator extends AbstractAuthenticator
      */
     protected function storeUser(UserInterface $user)
     {
-        $_SESSION[$this->sessionKey] = $user;
+        $this->sessions[$this->sessionKey] = $user;
 
         return;
     }
@@ -39,7 +41,11 @@ class NativeSessionAuthenticator extends AbstractAuthenticator
      */
     public function loadUser()
     {
-        return $_SESSION[$this->sessionKey];
+        if (!isset($this->sessions[$this->sessionKey])) {
+            return null;
+        }
+
+        return $this->sessions[$this->sessionKey];
     }
 
     /**
@@ -47,6 +53,6 @@ class NativeSessionAuthenticator extends AbstractAuthenticator
      */
     public function clearUser()
     {
-        unset($_SESSION[$this->sessionKey]);
+        unset($this->sessions[$this->sessionKey]);
     }
 }

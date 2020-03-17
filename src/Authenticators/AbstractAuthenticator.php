@@ -2,12 +2,13 @@
 
 namespace Lzpeng\Auth\Authenticators;
 
-use Lzpeng\Auth\Contracts\AuthenticatorInterface;
-use Lzpeng\Auth\Contracts\AuthEventInterface;
-use Lzpeng\Auth\Contracts\UserInterface;
-use Lzpeng\Auth\Events\EventArg;
-use Lzpeng\Auth\Exceptions\AuthException;
-use Lzpeng\Auth\Exceptions\InvalidCredentialException;
+use Lzpeng\Auth\AuthenticatorInterface;
+use Lzpeng\Auth\UserProviderInterface;
+use Lzpeng\Auth\UserInterface;
+use Lzpeng\Auth\AuthEventInterface;
+use Lzpeng\Auth\Event\Event;
+use Lzpeng\Auth\Exception\AuthException;
+use Lzpeng\Auth\Exception\InvalidCredentialException;
 
 /**
  * 抽象认证器
@@ -19,21 +20,21 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     /**
      * 用户身份对象
      *
-     * @var UserInterface
+     * @var \Lzpeng\Auth\UserInterface
      */
     protected $user;
 
     /**
      * 事件管理器
      *
-     * @var \Lzpeng\Auth\Contracts\EventManagerInterface
+     * @var \Lzpeng\Auth\Event\EventManagerInterface
      */
     private $eventManager;
 
     /**
      * 用户身份对象提供器
      *
-     * @var \Lzpeng\Auth\Contracts\UserProviderInterface
+     * @var \Lzpeng\Auth\UserProviderInterface
      */
     private $userProvider;
 
@@ -56,10 +57,10 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     /**
      * 设置用户身份对象提供器
      *
-     * @param \Lzpeng\Auth\Contracts\UserProviderInterface $userProvider 用户身份对象提供器
+     * @param \Lzpeng\Auth\UserProviderInterface $userProvider 用户身份对象提供器
      * @return void
      */
-    public function setUserProvider($userProvider)
+    public function setUserProvider(UserProviderInterface $userProvider)
     {
         $this->userProvider = $userProvider;
     }
@@ -78,7 +79,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     public function login(array $credentials)
     {
         try {
-            $this->getEventManager()->dispatch(self::EVENT_LOGIN_BEFORE, new EventArg([
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_BEFORE, new Event([
                 'credentials' => $credentials,
             ]));
 
@@ -92,7 +93,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             $result = $this->storeUser($user);
             $this->user = $user;
 
-            $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new EventArg([
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new Event([
                 'credentials' => $credentials,
                 'user' => $user,
                 'result' => $result,
@@ -100,7 +101,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
 
             return $result;
         } catch (AuthException $ex) {
-            $this->getEventManager()->dispatch(self::EVENT_LOGIN_FAILURE, new EventArg([
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_FAILURE, new Event([
                 'credentials' => $credentials,
                 'exception' => $ex,
             ]));
@@ -147,14 +148,14 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             $result = $this->storeUser($user);
             $this->user = $user;
 
-            $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new EventArg([
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new Event([
                 'user' => $user,
                 'result' => $result,
             ]));
 
             return $result;
         } catch (AuthException $ex) {
-            $this->getEventManager()->dispatch(self::EVENT_LOGIN_FAILURE, new EventArg([
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_FAILURE, new Event([
                 'exception' => $ex,
             ]));
 
@@ -169,14 +170,14 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      */
     public function logout()
     {
-        $this->getEventManager()->dispatch(self::EVENT_LOGOUT_BEFORE, new EventArg([
+        $this->getEventManager()->dispatch(self::EVENT_LOGOUT_BEFORE, new Event([
             'user' => $this->user(),
         ]));
 
         $this->clearUser();
         $this->user = null;
 
-        $this->getEventManager()->dispatch(self::EVENT_LOGUT_AFTER, new EventArg());
+        $this->getEventManager()->dispatch(self::EVENT_LOGUT_AFTER, new Event());
     }
 
     /**

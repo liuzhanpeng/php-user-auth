@@ -1,9 +1,8 @@
 <?php
 
-namespace Lzpeng\Tests\Creators;
+namespace Lzpeng\Auth\Tests;
 
-use Lzpeng\Tests\Authenticators\MemoryAuthenticator;
-use Lzpeng\Auth\Contracts\AuthenticatorCreatorInterface;
+use Lzpeng\Auth\AuthenticatorCreatorInterface;
 
 class MemoryAuthenticatorCreator implements AuthenticatorCreatorInterface
 {

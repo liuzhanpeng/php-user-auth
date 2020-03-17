@@ -2,15 +2,14 @@
 
 namespace Lzpeng\Auth\Users;
 
-use ArrayAccess;
-use Lzpeng\Auth\Contracts\UserInterface;
+use Lzpeng\Auth\UserInterface;
 
 /**
  * 通用用户类
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-class GenericUser implements UserInterface, ArrayAccess
+class GenericUser implements UserInterface, \ArrayAccess
 {
     /**
      * 用户数据

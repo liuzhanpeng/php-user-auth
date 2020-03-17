@@ -1,12 +1,11 @@
 <?php
 
-namespace Lzpeng\Tests\Authenticators;
+namespace Lzpeng\Auth\Tests;
 
 use Lzpeng\Auth\Authenticators\AbstractAccessableAuthenticator;
+use Lzpeng\Auth\UserInterface;
 
-use Lzpeng\Auth\Contracts\UserInterface;
-
-class MemoryAuthenticator extends AbstractAccessableAuthenticator
+class MemoryAccessableAuthenticator extends AbstractAccessableAuthenticator
 {
     /**
      * 会话数据
