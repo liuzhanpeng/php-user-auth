@@ -4,6 +4,7 @@ namespace Lzpeng\Auth\Authenticators;
 
 use Lzpeng\Auth\Contracts\AccessInterface;
 use Lzpeng\Auth\Contracts\AccessResourceProviderInterface;
+use Lzpeng\Auth\Events\EventArg;
 use Lzpeng\Auth\Exceptions\AccessException;
 use Lzpeng\Auth\Exceptions\Exception;
 
@@ -46,10 +47,10 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
             throw new AccessException('用户还未登录认证');
         }
 
-        $this->getEventManager()->trigger(self::EVENT_ACCESS_BEFORE, [
+        $this->getEventManager()->trigger(self::EVENT_ACCESS_BEFORE, new EventArg([
             'resourceId' => $resourceId,
             'user' => $this->user(),
-        ]);
+        ]));
 
         $provider = $this->getAccessSourceProvider();
         if (is_null($provider)) {
@@ -64,11 +65,11 @@ abstract class AbstractAccessableAuthenticator extends AbstractAuthenticator imp
             }
         }
 
-        $this->getEventManager()->trigger(self::EVENT_ACCESS_AFTER, [
+        $this->getEventManager()->trigger(self::EVENT_ACCESS_AFTER, new EventArg([
             'resourceId' => $resourceId,
             'user' => $this->user(),
             'isAllowed' => $result,
-        ]);
+        ]));
 
         return $result;
     }

@@ -2,18 +2,18 @@
 
 namespace Lzpeng\Auth;
 
-use Lzpeng\Auth\Contracts\AccessInterface;
-use Lzpeng\Auth\Contracts\AccessResourceProviderInterface;
-use Lzpeng\Auth\Contracts\AuthenticatorCreatorInterface;
-use Lzpeng\Auth\Contracts\UserProviderCreatorInterface;
-use Lzpeng\Auth\Contracts\AuthenticatorInterface;
-use Lzpeng\Auth\Contracts\AuthEventInterface;
-use Lzpeng\Auth\Contracts\EventManagerCreatorInterface;
-use Lzpeng\Auth\Contracts\EventManagerInterface;
-use Lzpeng\Auth\Contracts\UserProviderInterface;
-use Lzpeng\Auth\Events\EventManagerCreator;
-use Lzpeng\Auth\Exceptions\ConfigException;
-use Lzpeng\Auth\Exceptions\Exception;
+use Lzpeng\Auth\AuthenticatorCreatorInterface;
+use Lzpeng\Auth\UserProviderCreatorInterface;
+use Lzpeng\Auth\AuthenticatorInterface;
+use Lzpeng\Auth\AuthEventInterface;
+use Lzpeng\Auth\UserProviderInterface;
+use Lzpeng\Auth\Access\AccessInterface;
+use Lzpeng\Auth\Access\AccessResourceProviderInterface;
+use Lzpeng\Auth\Event\EventManagerCreatorInterface;
+use Lzpeng\Auth\Event\EventManagerInterface;
+use Lzpeng\Auth\Event\EventManagerCreator;
+use Lzpeng\Auth\Exception\Exception;
+use Lzpeng\Auth\Exception\ConfigException;
 
 /**
  * 用户认证管理器
@@ -71,7 +71,9 @@ class AuthManager
         AuthEventInterface::EVENT_LOGIN_FAILURE,
         AuthEventInterface::EVENT_LOGIN_SUCCESS,
         AuthEventInterface::EVENT_LOGOUT_BEFORE,
-        AuthEventInterface::EVENT_LOGUT_AFTER
+        AuthEventInterface::EVENT_LOGUT_AFTER,
+        AuthEventInterface::EVENT_ACCESS_BEFORE,
+        AuthEventInterface::EVENT_ACCESS_AFTER,
     ];
 
     /**
@@ -95,9 +97,9 @@ class AuthManager
      * 创建并返回认证器
      * 内部使用数组保存认证器列表，同一键名只创建一个实例
      *
-     * @param string $name 配置键名
+     * @param string $name 配置键名; 如果为null, 会上生成默认的认证
      * @return AuthenticatorInterface
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exception\Exception
      */
     public function create($name = null)
     {
@@ -132,7 +134,7 @@ class AuthManager
      * @param string $driver 认证器的驱动名称; 用于区别不同的认证器
      * @param AuthenticatorCreatorInterface|callable $creator 创建者
      * @return void
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exception\Exception
      */
     public function registerAuthenticatorCreator(string $driver, $creator)
     {
@@ -149,7 +151,7 @@ class AuthManager
      * @param string $driver 认证器的驱动名称; 用于区别不同的提供器
      * @param UserProviderCreatorInterface|callable $creator 创建者
      * @return void
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exception\Exception
      */
     public function registerUserProviderCreator(string $driver, $creator)
     {
@@ -189,7 +191,7 @@ class AuthManager
      * @param UserProviderInterface $userProvider 用户身份对象提供器
      * @param array $config 认证器配置
      * @return AuthenticatorInterface
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exception\Exception
      */
     private function createAuthenticator(UserProviderInterface $userProvider, array $config)
     {
@@ -218,7 +220,7 @@ class AuthManager
             // 注册事件
             $eventManager = $this->eventManagerCreator->createEventManager();
             if (isset($config['events'])) {
-                $this->registerEvents($eventManager, $config['events']);
+                $this->addListeners($eventManager, $config['events']);
             }
 
             // 每个authenticator独立的事件管理器
@@ -246,7 +248,7 @@ class AuthManager
      *
      * @param array $config 提供器配置项
      * @return UserProviderInterface
-     * @throws Exceptions\Exception
+     * @throws \Lzpeng\Auth\Exception\Exception
      */
     private function createUserProvider(array $config)
     {
@@ -269,13 +271,13 @@ class AuthManager
     }
 
     /**
-     * 注册事件
+     * 根据配置附加监听器
      *
      * @param EventManagerInterface $eventManager 事件管理器
      * @param array $config 配置
      * @return void
      */
-    private function registerEvents(EventManagerInterface $eventManager, array $config)
+    private function addListeners(EventManagerInterface $eventManager, array $config)
     {
         foreach ($config as $event => $listeners) {
             if (!in_array($event, $this->availableEvents)) {
@@ -284,15 +286,10 @@ class AuthManager
 
             foreach ($listeners as $listener) {
                 if (is_callable($listener)) {
-                    $eventManager->attachListener($event, $listener);
-                } elseif (is_string($listener)) {
-                    try {
-                        $instance = new $listener();
-                    } catch (\Error $ex) {
-                        throw new Exception(sprintf('无效的事件监听器[%s]', $listener));
-                    }
-
-                    $eventManager->attachListener($event, $instance);
+                    $eventManager->addListener($event, $listener);
+                } elseif (\class_exists($listener)) {
+                    $instance = new $listener();
+                    $eventManager->addListener($event, $instance);
                 } else {
                     throw new Exception(sprintf('事件监听器[%s]必须实现\Lzpeng\Auth\Contracts\EventListenerInterface接口或是callable对象', $listener));
                 }

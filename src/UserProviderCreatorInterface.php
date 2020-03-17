@@ -1,6 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth\Contracts;
+namespace Lzpeng\Auth;
 
 /**
  * 用户身份对象提供器创建者接口

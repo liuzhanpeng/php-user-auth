@@ -1,8 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth\Events;
-
-use Lzpeng\Auth\Contracts\EventManagerCreatorInterface;
+namespace Lzpeng\Auth\Event;
 
 /**
  * 内部默认的事件管理器创建者

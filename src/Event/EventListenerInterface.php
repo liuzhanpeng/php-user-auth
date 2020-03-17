@@ -1,6 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth\Contracts;
+namespace Lzpeng\Auth\Event;
 
 /**
  * 事件监听器接口
@@ -12,9 +12,9 @@ interface EventListenerInterface
     /**
      * 处理事件
      *
-     * @param mixed $arg 事件对象; 可为任意类型
+     * @param Event $event 事件对象
      * @return void
-     * @throws \Lzpeng\Auth\Exceptions\AuthException
+     * @throws \Lzpeng\Auth\Exception\AuthException
      */
-    public function handle($arg);
+    public function handle(Event $event);
 }

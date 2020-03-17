@@ -1,6 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth\Contracts;
+namespace Lzpeng\Auth\Access;
 
 /**
  * 权限访问接口
@@ -29,7 +29,7 @@ interface AccessInterface
      *
      * @param mixed $resourceId 资源标识
      * @return boolean
-     * @throws \Lzpeng\Auth\Exceptions\AccessException
+     * @throws \Lzpeng\Auth\Exception\AccessException
      */
     public function isAllowed($resourceId);
 }

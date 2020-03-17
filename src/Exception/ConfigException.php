@@ -1,6 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth\Exceptions;
+namespace Lzpeng\Auth\Exception;
 
 /**
  * 配置相关异常

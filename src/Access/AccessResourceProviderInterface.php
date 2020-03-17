@@ -1,6 +1,8 @@
 <?php
 
-namespace Lzpeng\Auth\Contracts;
+namespace Lzpeng\Auth\Access;
+
+use Lzpeng\Auth\UserInterface;
 
 /**
  * 权限资源提供器接口
@@ -15,5 +17,5 @@ interface AccessResourceProviderInterface
      * @param UserInterface $user 用户身份对象
      * @return array
      */
-    public function getAccessResources($user);
+    public function getAccessResources(UserInterface $user);
 }

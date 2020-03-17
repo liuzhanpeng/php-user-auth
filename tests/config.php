@@ -6,6 +6,9 @@ return [
     'authenticators' => [
         'test' => [
             'driver' => 'test_authenticator_driver',
+            'params' => [
+                'session_key' => 'UserIdentity',
+            ],
             'provider' => [
                 'driver' => 'test_provider_driver',
                 'params' => [
@@ -22,9 +25,6 @@ return [
                         'remark' => '测试用户2',
                     ],
                 ]
-            ],
-            'params' => [
-                'session_key' => 'UserIdentity',
             ],
             'events' => [
                 // 'login_before' => [

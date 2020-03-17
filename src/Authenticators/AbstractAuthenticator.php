@@ -5,6 +5,7 @@ namespace Lzpeng\Auth\Authenticators;
 use Lzpeng\Auth\Contracts\AuthenticatorInterface;
 use Lzpeng\Auth\Contracts\AuthEventInterface;
 use Lzpeng\Auth\Contracts\UserInterface;
+use Lzpeng\Auth\Events\EventArg;
 use Lzpeng\Auth\Exceptions\AuthException;
 use Lzpeng\Auth\Exceptions\InvalidCredentialException;
 
@@ -77,9 +78,9 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     public function login(array $credentials)
     {
         try {
-            $this->getEventManager()->trigger(self::EVENT_LOGIN_BEFORE, [
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_BEFORE, new EventArg([
                 'credentials' => $credentials,
-            ]);
+            ]));
 
             $user = $this->getUserProvider()->findByCredentials($credentials);
             if (is_null($user)) {
@@ -91,18 +92,18 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             $result = $this->storeUser($user);
             $this->user = $user;
 
-            $this->getEventManager()->trigger(self::EVENT_LOGIN_SUCCESS, [
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new EventArg([
                 'credentials' => $credentials,
                 'user' => $user,
                 'result' => $result,
-            ]);
+            ]));
 
             return $result;
         } catch (AuthException $ex) {
-            $this->getEventManager()->trigger(self::EVENT_LOGIN_FAILURE, [
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_FAILURE, new EventArg([
                 'credentials' => $credentials,
                 'exception' => $ex,
-            ]);
+            ]));
 
             throw $ex;
         }
@@ -146,16 +147,16 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             $result = $this->storeUser($user);
             $this->user = $user;
 
-            $this->getEventManager()->trigger(self::EVENT_LOGIN_SUCCESS, [
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new EventArg([
                 'user' => $user,
                 'result' => $result,
-            ]);
+            ]));
 
             return $result;
         } catch (AuthException $ex) {
-            $this->getEventManager()->trigger(self::EVENT_LOGIN_FAILURE, [
+            $this->getEventManager()->dispatch(self::EVENT_LOGIN_FAILURE, new EventArg([
                 'exception' => $ex,
-            ]);
+            ]));
 
             throw $ex;
         }
@@ -168,14 +169,14 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      */
     public function logout()
     {
-        $this->getEventManager()->trigger(self::EVENT_LOGOUT_BEFORE, [
+        $this->getEventManager()->dispatch(self::EVENT_LOGOUT_BEFORE, new EventArg([
             'user' => $this->user(),
-        ]);
+        ]));
 
         $this->clearUser();
         $this->user = null;
 
-        $this->getEventManager()->trigger(self::EVENT_LOGUT_AFTER, null);
+        $this->getEventManager()->dispatch(self::EVENT_LOGUT_AFTER, new EventArg());
     }
 
     /**

@@ -1,40 +1,57 @@
 <?php
 
-namespace Lzpeng\Auth\Access;
+namespace Lzpeng\Auth\Event;
 
 /**
- * 权限资源对象
+ * 事件对象
+ * 在认证事件处理过程中充当载体, 传递事件中信息
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-class Resource implements AccessResourceInterface, \ArrayAccess
+class Event implements \ArrayAccess
 {
-    /**
-     * 权限资源标识
-     *
-     * @var mixed
-     */
-    public $id;
-
     /**
      * 数据
      *
      * @var array
      */
-    public $data;
+    private $data;
 
-    public function __construct($id, array $data = [])
+    /**
+     * 是否已停止
+     *
+     * @var boolean
+     */
+    private $isStopped = false;
+
+    /**
+     * 构造函数
+     *
+     * @param array $data 数据
+     */
+    public function __construct(array $data = [])
     {
-        $this->id = $id;
         $this->data = $data;
     }
 
     /**
-     * @inheritDoc
+     * 事件是否已标识为停止传播
+     *
+     * @return boolean
      */
-    public function id()
+    public function isStopped()
     {
-        return $this->id;
+        return $this->isStopped;
+    }
+
+    /**
+     * 设置事件停止传播标识
+     *
+     * @return void
+     */
+    public function stop()
+    {
+        $this->isStopped = true;
     }
 
     /**

@@ -1,6 +1,8 @@
 <?php
 
-namespace Lzpeng\Auth\Contracts;
+namespace Lzpeng\Auth;
+
+use Lzpeng\Auth\Event\EventManagerInterface;
 
 /**
  * 认证事件接口

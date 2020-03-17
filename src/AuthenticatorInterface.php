@@ -1,6 +1,6 @@
 <?php
 
-namespace Lzpeng\Auth\Contracts;
+namespace Lzpeng\Auth;
 
 /**
  * 认证器接口
@@ -15,7 +15,7 @@ interface AuthenticatorInterface
      *
      * @param array $credentials 用户凭证
      * @return mixed
-     * @throws \Lzpeng\Auth\Exceptions\AuthException
+     * @throws \Lzpeng\Auth\Exception\AuthException
      */
     public function login(array $credentials);
 
@@ -48,7 +48,7 @@ interface AuthenticatorInterface
      *
      * @param UserInterface $user
      * @return void
-     * @throws \Lzpeng\Auth\Exceptions\AuthException
+     * @throws \Lzpeng\Auth\Exception\AuthException
      */
     public function setUser(UserInterface $user);
 
@@ -56,7 +56,7 @@ interface AuthenticatorInterface
      * 用户登出
      *
      * @return void
-     * @throws \Lzpeng\Auth\Exceptions\AuthException
+     * @throws \Lzpeng\Auth\Exception\AuthException
      */
     public function logout();
 
