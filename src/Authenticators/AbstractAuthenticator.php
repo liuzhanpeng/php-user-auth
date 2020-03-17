@@ -2,11 +2,15 @@
 
 namespace Lzpeng\Auth\Authenticators;
 
+use Lzpeng\Auth\Access\AccessInterface;
+use Lzpeng\Auth\Access\AccessResourceProviderInterface;
 use Lzpeng\Auth\AuthenticatorInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\UserInterface;
 use Lzpeng\Auth\AuthEventInterface;
 use Lzpeng\Auth\Event\Event;
+use Lzpeng\Auth\Exception\Exception;
+use Lzpeng\Auth\Exception\AccessException;
 use Lzpeng\Auth\Exception\AuthException;
 use Lzpeng\Auth\Exception\InvalidCredentialException;
 
@@ -15,7 +19,7 @@ use Lzpeng\Auth\Exception\InvalidCredentialException;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEventInterface
+abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEventInterface, AccessInterface
 {
     /**
      * 用户身份对象
@@ -37,6 +41,13 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      * @var \Lzpeng\Auth\UserProviderInterface
      */
     private $userProvider;
+
+    /**
+     * 权限资源提供器
+     *
+     * @var \Lzpeng\Auth\Access\AccessResourceProviderInterface
+     */
+    private $accessResourceProvider;
 
     /**
      * @inheritDoc
@@ -71,6 +82,22 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     public function getUserProvider()
     {
         return $this->userProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setAccessSourceProvider(AccessResourceProviderInterface $accessResourceProvider)
+    {
+        $this->accessResourceProvider = $accessResourceProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAccessSourceProvider()
+    {
+        return $this->accessResourceProvider;
     }
 
     /**
@@ -201,4 +228,40 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      * @return void
      */
     abstract protected function clearUser();
+
+    /**
+     * @inheritDoc
+     */
+    public function isAllowed($resourceId)
+    {
+        if (!$this->isLogined()) {
+            throw new AccessException('用户还未登录认证');
+        }
+
+        $this->getEventManager()->dispatch(self::EVENT_ACCESS_BEFORE, new Event([
+            'resourceId' => $resourceId,
+            'user' => $this->user(),
+        ]));
+
+        $provider = $this->getAccessSourceProvider();
+        if (is_null($provider)) {
+            throw new Exception('找不到权限资源提供器');
+        }
+
+        $result = false;
+        foreach ($provider->getAccessResources($this->user()) as $resource) {
+            if ($resource->id() === $resourceId) {
+                $result = true;
+                break;
+            }
+        }
+
+        $this->getEventManager()->dispatch(self::EVENT_ACCESS_AFTER, new Event([
+            'resourceId' => $resourceId,
+            'user' => $this->user(),
+            'isAllowed' => $result,
+        ]));
+
+        return $result;
+    }
 }

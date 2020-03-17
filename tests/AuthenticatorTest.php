@@ -158,7 +158,7 @@ class AuthenticatorTest extends TestCase
     public function testIsAllowWithoutLogin()
     {
         $this->authManager->registerAuthenticatorCreator('test_authenticator_driver', function ($config) {
-            return new MemoryAccessableAuthenticator($config['session_key']);
+            return new MemoryAuthenticator($config['session_key']);
         });
 
         $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
@@ -175,7 +175,7 @@ class AuthenticatorTest extends TestCase
     public function testIsAllow()
     {
         $this->authManager->registerAuthenticatorCreator('test_authenticator_driver', function ($config) {
-            return new MemoryAccessableAuthenticator($config['session_key']);
+            return new MemoryAuthenticator($config['session_key']);
         });
 
         $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
@@ -198,7 +198,7 @@ class AuthenticatorTest extends TestCase
     public function testAccessEvent()
     {
         $this->authManager->registerAuthenticatorCreator('test_authenticator_driver', function ($config) {
-            return new MemoryAccessableAuthenticator($config['session_key']);
+            return new MemoryAuthenticator($config['session_key']);
         });
 
         $this->authManager->registerAccessResourceProvider('test_access_resource_provider', new ArrayAccessResourceProvider());
