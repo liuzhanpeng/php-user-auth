@@ -8,6 +8,7 @@ use Lzpeng\Auth\AuthenticatorInterface;
 use Lzpeng\Auth\AuthEventInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\Access\AccessInterface;
+use Lzpeng\Auth\Access\ResourceProviderCreatorInterface;
 use Lzpeng\Auth\Access\ResourceProviderInterface;
 use Lzpeng\Auth\Event\EventManagerCreatorInterface;
 use Lzpeng\Auth\Event\EventManagerInterface;
@@ -77,11 +78,11 @@ class AuthManager
     ];
 
     /**
-     * 权限资源提供器列表
+     * 权限资源提供器创建者列表
      *
      * @var array
      */
-    private $resourceProviders = [];
+    private $resourceProviderCreators = [];
 
     /**
      * 构造函数
@@ -177,12 +178,16 @@ class AuthManager
      * 注册权限资源提供器
      *
      * @param string $driver 驱动名称
-     * @param ResourceProviderInterface $provider 权限资源提供器
+     * @param ResourceProviderCreatorInterface|callable $creator 创建者
      * @return void
      */
-    public function registerResourceProvider(string $driver, ResourceProviderInterface $provider)
+    public function registerResourceProvider(string $driver, $creator)
     {
-        $this->resourceProviders[$driver] = $provider;
+        if (!$creator instanceof ResourceProviderCreatorInterface && !is_callable($creator)) {
+            throw new Exception('权限资源提供器创建者必实现ResourceProviderCreatorInterface或是返回实现了ResourceProviderInterface的实例的callable');
+        }
+
+        $this->resourceProviderCreators[$driver] = $creator;
     }
 
     /**
@@ -201,9 +206,9 @@ class AuthManager
 
         $creator = $this->authenticatorCreators[$config['driver']];
         if ($creator instanceof AuthenticatorCreatorInterface) {
-            $authenticator = $creator->createAuthenticator($config['params']);
+            $authenticator = $creator->createAuthenticator($config['params'] ?? []);
         } else {
-            $authenticator = call_user_func($creator, $config['params']);
+            $authenticator = call_user_func($creator, $config['params'] ?? []);
         }
         $authenticator->setUserProvider($userProvider);
 
@@ -232,12 +237,8 @@ class AuthManager
                 throw new Exception(sprintf('认证器[%s]未实现AccessInterface接口', $config['driver']));
             }
 
-            $driver = $config['access']['driver'];
-            if (!isset($this->resourceProviders[$driver])) {
-                throw new Exception(sprintf('未注册权限资源提供器[%s]', $driver));
-            }
-
-            $authenticator->setResourceProvider($this->resourceProviders[$driver]);
+            $resourceProvider = $this->createResourceProvider($config['access']);
+            $authenticator->setResourceProvider($resourceProvider);
         }
 
         return $authenticator;
@@ -258,13 +259,40 @@ class AuthManager
 
         $creator = $this->userProviderCreators[$config['driver']];
         if ($creator instanceof UserProviderCreatorInterface) {
-            $provider = $creator->createUserProvider($config['params']);
+            $provider = $creator->createUserProvider($config['params'] ?? []);
         } else {
-            $provider = call_user_func($creator, $config['params']);
+            $provider = call_user_func($creator, $config['params'] ?? []);
         }
 
         if (!$provider instanceof UserProviderInterface) {
             throw new Exception(sprintf('用户身份对象提供器[%s]必须实现UserProviderInterface', $config['driver']));
+        }
+
+        return $provider;
+    }
+
+    /**
+     * 创建权限资源提供器
+     *
+     * @param array $config 配置
+     * @return ResourceProviderInterface
+     */
+    private function createResourceProvider(array $config)
+    {
+        $driver = $config['driver'];
+        if (!isset($this->resourceProviderCreators[$driver])) {
+            throw new Exception(sprintf('找不到权限资源提供器驱动[%s]', $driver));
+        }
+
+        $creator = $this->resourceProviderCreators[$driver];
+        if ($creator instanceof ResourceProviderCreatorInterface) {
+            $provider = $creator->createResourceProvider($config['params'] ?? []);
+        } else {
+            $provider = call_user_func($creator, $config['params'] ?? []);
+        }
+
+        if (!$provider instanceof ResourceProviderInterface) {
+            throw new Exception(sprintf('权限资源提供器[%s]必须实现ResourceProviderInterface接口', $driver));
         }
 
         return $provider;

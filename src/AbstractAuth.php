@@ -11,7 +11,7 @@ use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-class Auth
+abstract class AbstractAuth
 {
     /**
      * AuthManager实例
@@ -43,10 +43,7 @@ class Auth
      *
      * @return array
      */
-    protected function getConfig()
-    {
-        return [];
-    }
+    abstract protected function getConfig();
 
     private function __construct()
     {
