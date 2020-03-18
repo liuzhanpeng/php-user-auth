@@ -242,9 +242,9 @@ class AuthenticatorTest extends TestCase
 
         $authenticator->getEventManager()->removeListener('access_after');
 
-        $authenticator->getEventManager()->addListener('access_after', function ($params) {
-            if ($params['isAllowed'] == 0) {
-                file_put_contents('access_log', sprintf('%s: %s', $params['user']->name, $params['resourceId']));
+        $authenticator->getEventManager()->addListener('access_after', function (Event $event) {
+            if (!$event->isAllowed) {
+                file_put_contents('access_log', sprintf('%s: %s', $event->user->name, $event->resourceId));
             }
         });
 
