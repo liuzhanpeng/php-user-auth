@@ -7,7 +7,7 @@ namespace Lzpeng\Auth\Access;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-interface AccessResourceInterface
+interface ResourceInterface
 {
     /**
      * 返回资源标识

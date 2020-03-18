@@ -8,7 +8,7 @@ use Lzpeng\Auth\AuthenticatorInterface;
 use Lzpeng\Auth\AuthEventInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\Access\AccessInterface;
-use Lzpeng\Auth\Access\AccessResourceProviderInterface;
+use Lzpeng\Auth\Access\ResourceProviderInterface;
 use Lzpeng\Auth\Event\EventManagerCreatorInterface;
 use Lzpeng\Auth\Event\EventManagerInterface;
 use Lzpeng\Auth\Event\EventManagerCreator;
@@ -77,11 +77,11 @@ class AuthManager
     ];
 
     /**
-     * 访问资源提供器列表
+     * 权限资源提供器列表
      *
      * @var array
      */
-    private $accessResourceProviders = [];
+    private $resourceProviders = [];
 
     /**
      * 构造函数
@@ -177,12 +177,12 @@ class AuthManager
      * 注册权限资源提供器
      *
      * @param string $driver 驱动名称
-     * @param AccessResourceProviderInterface $provider 权限资源提供器
+     * @param ResourceProviderInterface $provider 权限资源提供器
      * @return void
      */
-    public function registerAccessResourceProvider(string $driver, AccessResourceProviderInterface $provider)
+    public function registerResourceProvider(string $driver, ResourceProviderInterface $provider)
     {
-        $this->accessResourceProviders[$driver] = $provider;
+        $this->resourceProviders[$driver] = $provider;
     }
 
     /**
@@ -233,11 +233,11 @@ class AuthManager
             }
 
             $driver = $config['access']['driver'];
-            if (!isset($this->accessResourceProviders[$driver])) {
+            if (!isset($this->resourceProviders[$driver])) {
                 throw new Exception(sprintf('未注册权限资源提供器[%s]', $driver));
             }
 
-            $authenticator->setAccessSourceProvider($this->accessResourceProviders[$driver]);
+            $authenticator->setResourceProvider($this->resourceProviders[$driver]);
         }
 
         return $authenticator;

@@ -2,11 +2,15 @@
 
 namespace Lzpeng\Auth\Authenticators;
 
+use Lzpeng\Auth\Access\AccessInterface;
+use Lzpeng\Auth\Access\ResourceProviderInterface;
 use Lzpeng\Auth\AuthenticatorInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\UserInterface;
 use Lzpeng\Auth\AuthEventInterface;
 use Lzpeng\Auth\Event\Event;
+use Lzpeng\Auth\Exception\Exception;
+use Lzpeng\Auth\Exception\AccessException;
 use Lzpeng\Auth\Exception\AuthException;
 use Lzpeng\Auth\Exception\InvalidCredentialException;
 
@@ -15,15 +19,8 @@ use Lzpeng\Auth\Exception\InvalidCredentialException;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEventInterface
+abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEventInterface, AccessInterface
 {
-    /**
-     * 用户身份对象
-     *
-     * @var \Lzpeng\Auth\UserInterface
-     */
-    protected $user;
-
     /**
      * 事件管理器
      *
@@ -37,6 +34,13 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      * @var \Lzpeng\Auth\UserProviderInterface
      */
     private $userProvider;
+
+    /**
+     * 权限资源提供器
+     *
+     * @var \Lzpeng\Auth\Access\ResourceProviderInterface
+     */
+    private $resourceProvider;
 
     /**
      * @inheritDoc
@@ -76,6 +80,22 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     /**
      * @inheritDoc
      */
+    public function setResourceProvider(ResourceProviderInterface $resourceProvider)
+    {
+        $this->resourceProvider = $resourceProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResourceProvider()
+    {
+        return $this->resourceProvider;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function login(array $credentials)
     {
         try {
@@ -91,7 +111,6 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             $this->getUserProvider()->validateCredentials($user, $credentials);
 
             $result = $this->storeUser($user);
-            $this->user = $user;
 
             $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new Event([
                 'credentials' => $credentials,
@@ -123,7 +142,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      */
     public function id()
     {
-        $user = $this->loadUser();
+        $user = $this->user();
         if (is_null($user)) {
             return null;
         }
@@ -146,7 +165,6 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     {
         try {
             $result = $this->storeUser($user);
-            $this->user = $user;
 
             $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new Event([
                 'user' => $user,
@@ -175,7 +193,6 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
         ]));
 
         $this->clearUser();
-        $this->user = null;
 
         $this->getEventManager()->dispatch(self::EVENT_LOGUT_AFTER, new Event());
     }
@@ -201,4 +218,40 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      * @return void
      */
     abstract protected function clearUser();
+
+    /**
+     * @inheritDoc
+     */
+    public function isAllowed($resourceId)
+    {
+        if (!$this->isLogined()) {
+            throw new AccessException('用户还未登录认证');
+        }
+
+        $this->getEventManager()->dispatch(self::EVENT_ACCESS_BEFORE, new Event([
+            'resourceId' => $resourceId,
+            'user' => $this->user(),
+        ]));
+
+        $provider = $this->getResourceProvider();
+        if (is_null($provider)) {
+            throw new Exception('找不到权限资源提供器');
+        }
+
+        $result = false;
+        foreach ($provider->getResources($this->user()) as $resource) {
+            if ($resource->id() === $resourceId) {
+                $result = true;
+                break;
+            }
+        }
+
+        $this->getEventManager()->dispatch(self::EVENT_ACCESS_AFTER, new Event([
+            'resourceId' => $resourceId,
+            'user' => $this->user(),
+            'isAllowed' => $result,
+        ]));
+
+        return $result;
+    }
 }

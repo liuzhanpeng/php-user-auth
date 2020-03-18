@@ -3,6 +3,8 @@
 namespace Lzpeng\Auth\Tests;
 
 use Lzpeng\Auth\AuthenticatorInterface;
+use Lzpeng\Auth\Authenticators\MemoryAuthenticator;
+use Lzpeng\Auth\Authenticators\MemoryAuthenticatorCreator;
 use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
 use Lzpeng\Auth\Event\EventManagerCreator;

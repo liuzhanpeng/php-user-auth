@@ -9,7 +9,7 @@ use Lzpeng\Auth\UserInterface;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-interface AccessResourceProviderInterface
+interface ResourceProviderInterface
 {
     /**
      * 返回资源列表
@@ -17,5 +17,5 @@ interface AccessResourceProviderInterface
      * @param UserInterface $user 用户身份对象
      * @return array
      */
-    public function getAccessResources(UserInterface $user);
+    public function getResources(UserInterface $user);
 }

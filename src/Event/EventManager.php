@@ -71,15 +71,16 @@ class EventManager implements EventManagerInterface
         }
 
         foreach ($this->events[$name] as $listener) {
-            if ($event->isStopped()) {
-                // 事件已标识停止分发，直接返回
-                break;
-            }
 
             if ($listener instanceof EventListenerInterface) {
                 $listener->handle($event);
             } else {
                 call_user_func($listener, $event);
+            }
+
+            if ($event->isStopped()) {
+                // 事件已标识停止分发，直接返回
+                break;
             }
         }
     }
