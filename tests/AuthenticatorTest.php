@@ -183,11 +183,13 @@ class AuthenticatorTest extends TestCase
             return new MemoryAuthenticator($config['session_key']);
         });
 
-        $this->authManager->registerResourceProvider('test_access_resource_provider', new NativeArrayResourceProvider([[
-            'id' => 1,
-            'name' => 'peng',
-            'resources' => ['resource1', 'resource2']
-        ]]));
+        $this->authManager->registerResourceProvider('test_access_resource_provider', function () {
+            return new NativeArrayResourceProvider([[
+                'id' => 1,
+                'name' => 'peng',
+                'resources' => ['resource1', 'resource2']
+            ]]);
+        });
 
         $authenticator = $this->authManager->create('test3');
 
@@ -205,11 +207,13 @@ class AuthenticatorTest extends TestCase
         });
 
 
-        $this->authManager->registerResourceProvider('test_access_resource_provider', new NativeArrayResourceProvider([[
-            'id' => 1,
-            'name' => 'peng',
-            'resources' => ['resource1', 'resource2']
-        ]]));
+        $this->authManager->registerResourceProvider('test_access_resource_provider', function () {
+            return new NativeArrayResourceProvider([[
+                'id' => 1,
+                'name' => 'peng',
+                'resources' => ['resource1', 'resource2']
+            ]]);
+        });
 
         $authenticator = $this->authManager->create('test3');
 
@@ -232,11 +236,13 @@ class AuthenticatorTest extends TestCase
             return new MemoryAuthenticator($config['session_key']);
         });
 
-        $this->authManager->registerResourceProvider('test_access_resource_provider', new NativeArrayResourceProvider([[
-            'id' => 1,
-            'name' => 'peng',
-            'resources' => ['resource1', 'resource2']
-        ]]));
+        $this->authManager->registerResourceProvider('test_access_resource_provider', function () {
+            return new NativeArrayResourceProvider([[
+                'id' => 1,
+                'name' => 'peng',
+                'resources' => ['resource1', 'resource2']
+            ]]);
+        });
 
         $authenticator = $this->authManager->create('test3');
 
