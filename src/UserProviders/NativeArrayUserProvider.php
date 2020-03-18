@@ -9,36 +9,40 @@ use Lzpeng\Auth\Users\GenericUser;
 
 /**
  * 基于原生数组的简单的用户身份对象提供器
- * 使用账号/密码的认证方式; 主要是一个示例，代码扩展性就不考虑了, 估计实际上不会使用
- * 
- * 用户数据格式:
- * 
- * [
- *      [
- *          "id" => 1,
- *          "name" => "peng",
- *          "password" => "123654",
- *          ...
- *      ],
- *      [
- *          "id" => 2,
- *          "name" => "test",
- *          "password" => "123654",
- *          ...
- *      ], ...
- * ]
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
 class NativeArrayUserProvider implements UserProviderInterface
 {
     /**
-     * 保存用户信息的数组
+     * 用户配置
      *
      * @var array
      */
     private $config;
 
+    /**
+     * 构造函数
+     * 
+     * 配置例子:
+     * 
+     * [
+     *      [
+     *          "id" => 1,
+     *          "name" => "peng",
+     *          "password" => "123654",
+     *          ...
+     *      ],
+     *      [
+     *          "id" => 2,
+     *          "name" => "test",
+     *          "password" => "123654",
+     *          ...
+     *      ], ...
+     * ]
+     *
+     * @param array $config
+     */
     public function __construct(array $config)
     {
         $this->config = $config;

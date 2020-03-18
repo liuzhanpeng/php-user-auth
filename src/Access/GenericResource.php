@@ -3,11 +3,11 @@
 namespace Lzpeng\Auth\Access;
 
 /**
- * 权限资源对象
+ * 通用权限资源对象
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-class Resource implements AccessResourceInterface, \ArrayAccess
+class GenericResource implements ResourceInterface, \ArrayAccess
 {
     /**
      * 权限资源标识

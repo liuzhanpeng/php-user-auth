@@ -12,17 +12,17 @@ interface AccessInterface
     /**
      * 设置权限资源提供器接口
      *
-     * @param AccessResourceProviderInterface $provider 权限资源提供器接口
+     * @param ResourceProviderInterface $provider 权限资源提供器接口
      * @return void
      */
-    public function setAccessSourceProvider(AccessResourceProviderInterface $provider);
+    public function setResourceProvider(ResourceProviderInterface $provider);
 
     /**
      * 返回权限资源提供器接口
      *
-     * @return AccessResourceProviderInterface
+     * @return ResourceProviderInterface
      */
-    public function getAccessSourceProvider();
+    public function getResourceProvider();
 
     /**
      * 是否允许访问指定权限资源

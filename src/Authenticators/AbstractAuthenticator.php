@@ -3,7 +3,7 @@
 namespace Lzpeng\Auth\Authenticators;
 
 use Lzpeng\Auth\Access\AccessInterface;
-use Lzpeng\Auth\Access\AccessResourceProviderInterface;
+use Lzpeng\Auth\Access\ResourceProviderInterface;
 use Lzpeng\Auth\AuthenticatorInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\UserInterface;
@@ -22,13 +22,6 @@ use Lzpeng\Auth\Exception\InvalidCredentialException;
 abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEventInterface, AccessInterface
 {
     /**
-     * 用户身份对象
-     *
-     * @var \Lzpeng\Auth\UserInterface
-     */
-    protected $user;
-
-    /**
      * 事件管理器
      *
      * @var \Lzpeng\Auth\Event\EventManagerInterface
@@ -45,9 +38,9 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     /**
      * 权限资源提供器
      *
-     * @var \Lzpeng\Auth\Access\AccessResourceProviderInterface
+     * @var \Lzpeng\Auth\Access\ResourceProviderInterface
      */
-    private $accessResourceProvider;
+    private $resourceProvider;
 
     /**
      * @inheritDoc
@@ -87,17 +80,17 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     /**
      * @inheritDoc
      */
-    public function setAccessSourceProvider(AccessResourceProviderInterface $accessResourceProvider)
+    public function setResourceProvider(ResourceProviderInterface $resourceProvider)
     {
-        $this->accessResourceProvider = $accessResourceProvider;
+        $this->resourceProvider = $resourceProvider;
     }
 
     /**
      * @inheritDoc
      */
-    public function getAccessSourceProvider()
+    public function getResourceProvider()
     {
-        return $this->accessResourceProvider;
+        return $this->resourceProvider;
     }
 
     /**
@@ -118,7 +111,6 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             $this->getUserProvider()->validateCredentials($user, $credentials);
 
             $result = $this->storeUser($user);
-            $this->user = $user;
 
             $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new Event([
                 'credentials' => $credentials,
@@ -150,7 +142,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      */
     public function id()
     {
-        $user = $this->loadUser();
+        $user = $this->user();
         if (is_null($user)) {
             return null;
         }
@@ -173,7 +165,6 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     {
         try {
             $result = $this->storeUser($user);
-            $this->user = $user;
 
             $this->getEventManager()->dispatch(self::EVENT_LOGIN_SUCCESS, new Event([
                 'user' => $user,
@@ -202,7 +193,6 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
         ]));
 
         $this->clearUser();
-        $this->user = null;
 
         $this->getEventManager()->dispatch(self::EVENT_LOGUT_AFTER, new Event());
     }
@@ -243,13 +233,13 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             'user' => $this->user(),
         ]));
 
-        $provider = $this->getAccessSourceProvider();
+        $provider = $this->getResourceProvider();
         if (is_null($provider)) {
             throw new Exception('找不到权限资源提供器');
         }
 
         $result = false;
-        foreach ($provider->getAccessResources($this->user()) as $resource) {
+        foreach ($provider->getResources($this->user()) as $resource) {
             if ($resource->id() === $resourceId) {
                 $result = true;
                 break;
