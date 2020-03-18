@@ -18,13 +18,6 @@ interface AccessInterface
     public function setResourceProvider(ResourceProviderInterface $provider);
 
     /**
-     * 返回权限资源提供器接口
-     *
-     * @return ResourceProviderInterface
-     */
-    public function getResourceProvider();
-
-    /**
      * 是否允许访问指定权限资源
      *
      * @param mixed $resourceId 资源标识
