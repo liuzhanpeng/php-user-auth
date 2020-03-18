@@ -11,7 +11,7 @@ use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-abstract class Auth
+abstract class AbstractAuth
 {
     /**
      * AuthManager实例
