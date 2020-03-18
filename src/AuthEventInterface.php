@@ -54,11 +54,4 @@ interface AuthEventInterface
      * @return void
      */
     public function setEventManager(EventManagerInterface $eventManager);
-
-    /**
-     * 返回事件管理器
-     *
-     * @return EventManagerInterface
-     */
-    public function getEventManager();
 }

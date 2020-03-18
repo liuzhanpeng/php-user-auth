@@ -51,10 +51,17 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     }
 
     /**
-     * @inheritDoc
+     * 返回事件管理器
+     *
+     * @return EventManagerInterface
+     * @throws Exception
      */
     public function getEventManager()
     {
+        if (is_null($this->eventManager)) {
+            throw new Exception('认证器未设置事件管理器');
+        }
+
         return $this->eventManager;
     }
 
@@ -70,10 +77,17 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     }
 
     /**
-     * @inheritDoc
+     * 返回用户身份对象提供器
+     *
+     * @return UserProviderInterface
+     * @throws Exception
      */
     public function getUserProvider()
     {
+        if (is_null($this->userProvider)) {
+            throw new Exception('认证器未设置用户身份对象提供器');
+        }
+
         return $this->userProvider;
     }
 
@@ -86,10 +100,17 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     }
 
     /**
-     * @inheritDoc
+     * 返回权限资源提供器
+     *
+     * @return ResourceProviderInterface
+     * @throws Exception
      */
     public function getResourceProvider()
     {
+        if (is_null($this->resourceProvider)) {
+            throw new Exception('认证器未设置权限资源提供器');
+        }
+
         return $this->resourceProvider;
     }
 
@@ -226,6 +247,11 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
     {
         if (!$this->isLogined()) {
             throw new AccessException('用户还未登录认证');
+        }
+
+        $eventManger = $this->getEventManager();
+        if (is_null($eventManger)) {
+            throw new Exception('认证器未设置事件管理器');
         }
 
         $this->getEventManager()->dispatch(self::EVENT_ACCESS_BEFORE, new Event([

@@ -61,13 +61,6 @@ interface AuthenticatorInterface
     public function logout();
 
     /**
-     * 返回用户身份对象提供器
-     *
-     * @return UserProviderInterface
-     */
-    public function getUserProvider();
-
-    /**
      * 设置用户身份对象提供器
      *
      * @param UserProviderInterface $userProvider 用户身份对象提供器
