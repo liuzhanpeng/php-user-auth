@@ -260,11 +260,16 @@ class AuthManager
 
             $accessor = $this->accessorCreator->createAccessor();
 
-            if (isset($config['access']) && isset($config['access']['driver'])) {
-                $resourceProvider = $this->createResourceProvider($config['access']['driver']);
+            if (isset($config['access']) && isset($config['access']['provider'])) {
+                $resourceProvider = $this->createResourceProvider($config['access']['provider']);
                 $accessor->setResourceProvider($resourceProvider);
 
                 if ($accessor instanceof EventableInterface) {
+
+                    $eventManager = $this->eventManagerCreator->createEventManager();
+                    if (isset($config['access']['events'])) {
+                        $this->addListeners($eventManager, $config['access']['events']);
+                    }
                     $accessor->setEventManager($eventManager);
                 }
             }

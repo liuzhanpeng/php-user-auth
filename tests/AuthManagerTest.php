@@ -2,6 +2,9 @@
 
 namespace Lzpeng\Auth\Tests;
 
+use Lzpeng\Auth\Access\ResourceProviderCreatorInterface;
+use Lzpeng\Auth\Access\ResourceProviderInterface;
+use Lzpeng\Auth\AccessableInterface;
 use Lzpeng\Auth\AuthenticatorCreatorInterface;
 use Lzpeng\Auth\EventableAuthenticatorInterface;
 use Lzpeng\Auth\Authenticators\MemoryAuthenticator;
@@ -11,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
 use Lzpeng\Auth\Event\EventManagerCreator;
 use Lzpeng\Auth\Exception\ConfigException;
+use Lzpeng\Auth\Exception\Exception;
 use Lzpeng\Auth\UserProviderCreatorInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
@@ -192,4 +196,60 @@ class AuthManagerTest extends TestCase
         $authenticator2 = $authManager->create('test2');
         $this->assertInstanceOf(EventableAuthenticatorInterface::class, $authenticator2);
     }
+
+    public function testRegisterResourceProviderByCreator()
+    {
+        $creator = $this->getMockBuilder(ResourceProviderCreatorInterface::class)->getMock();
+        $provider = $this->getMockBuilder(ResourceProviderInterface::class)->getMock();
+
+        $creator->method('createResourceProvider')->willReturn($provider);
+
+        $this->authManager->registerResourceProvider('test_access_resource_provider', $creator);
+    }
+
+    /**
+     * @depends clone testRegisterUserProviderByCreator
+     */
+    public function testAccessWithoutResourceProvider($authManager)
+    {
+
+        $creator = $this->getMockBuilder(AuthenticatorCreatorInterface::class)->getMock();
+
+        $authenticator = $this->getMockBuilder(TestInterface::class)->getMock();
+        $creator->method('createAuthenticator')
+            ->willReturn($authenticator);
+
+        $authManager->registerAuthenticatorCreator('test_authenticator_driver', $creator);
+
+        $this->expectException(Exception::class);
+        $authenticator = $authManager->create('test3');
+    }
+
+    /**
+     * @depends clone testRegisterUserProviderByCreator
+     */
+    public function testAccess($authManager)
+    {
+
+        $creator = $this->getMockBuilder(AuthenticatorCreatorInterface::class)->getMock();
+
+        $authenticator = $this->getMockBuilder(TestInterface::class)->getMock();
+        $creator->method('createAuthenticator')
+            ->willReturn($authenticator);
+
+        $authManager->registerAuthenticatorCreator('test_authenticator_driver', $creator);
+
+        $authManager->registerResourceProvider('test_access_resource_provider', function ($config) {
+            $provider = $this->getMockBuilder(ResourceProviderInterface::class)->getMock();
+
+            return $provider;
+        });
+
+        $authenticator = $authManager->create('test3');
+    }
+}
+
+
+interface TestInterface extends EventableAuthenticatorInterface, AccessableInterface
+{
 }

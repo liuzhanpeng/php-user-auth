@@ -83,9 +83,12 @@ return [
                     'driver' => 'test_access_resource_provider',
                 ],
                 'events' => [
-                    'access_success' => [
+                    'access_after' => [
                         Lzpeng\Auth\Tests\TestListener::class,
-                    ]
+                        function ($event) {
+                            echo 'sss';
+                        }
+                    ],
                 ]
             ],
         ],
