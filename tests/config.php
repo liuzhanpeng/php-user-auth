@@ -27,9 +27,9 @@ return [
                 ]
             ],
             'events' => [
-                // 'login_before' => [
-                //     Lzpeng\Tests\Listeners\LogCrendentials::class,
-                // ]
+                'login_before' => [
+                    Lzpeng\Auth\Tests\TestListener::class,
+                ]
             ],
         ],
         'test2' => [
@@ -79,7 +79,17 @@ return [
                 'session_key' => 'UserIdentity',
             ],
             'access' => [
-                'driver' => 'test_access_resource_provider',
+                'provider' => [
+                    'driver' => 'test_access_resource_provider',
+                ],
+                'events' => [
+                    'access_after' => [
+                        Lzpeng\Auth\Tests\TestListener::class,
+                        function ($event) {
+                            echo 'sss';
+                        }
+                    ],
+                ]
             ],
         ],
     ]

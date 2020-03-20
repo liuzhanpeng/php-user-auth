@@ -3,6 +3,7 @@
 namespace Lzpeng\Auth\Event;
 
 use Lzpeng\Auth\Exception\EventException;
+use Lzpeng\Auth\UserInterface;
 
 /**
  * 内部默认的事件管理器
@@ -28,6 +29,16 @@ class EventManager implements EventManagerInterface
     private $events = [];
 
     /**
+     * 返回已添加的事件列表
+     *
+     * @return array
+     */
+    public function events()
+    {
+        return $this->events;
+    }
+
+    /**
      * @inheritDoc
      */
     public function addListener(string $name, $listener)
@@ -48,6 +59,10 @@ class EventManager implements EventManagerInterface
      */
     public function removeListener(string $name, $listener = null)
     {
+        if (!isset($this->events[$name])) {
+            throw new EventException(sprintf('找不到待移除的事件[%s]', $name));
+        }
+
         if (is_null($listener)) {
             $this->events[$name] = [];
             return;
@@ -55,6 +70,7 @@ class EventManager implements EventManagerInterface
 
         foreach ($this->events[$name] as $key => $item) {
             if ($item === $listener) {
+
                 unset($this->events[$name][$key]);
                 break;
             }

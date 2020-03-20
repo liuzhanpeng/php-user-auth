@@ -2,6 +2,7 @@
 
 namespace Lzpeng\Auth\Users;
 
+use Lzpeng\Auth\Exception\Exception;
 use Lzpeng\Auth\UserInterface;
 
 /**
@@ -42,6 +43,10 @@ class GenericUser implements UserInterface, \ArrayAccess
      */
     public function id()
     {
+        if (!isset($this->data[$this->idKey])) {
+            throw new Exception('无效idkey');
+        }
+
         return $this->data[$this->idKey];
     }
 

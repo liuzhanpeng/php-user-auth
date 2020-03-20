@@ -3,6 +3,7 @@
 namespace Lzpeng\Auth;
 
 use Lzpeng\Auth\Authenticators\NativeSessionAuthenticator;
+use Lzpeng\Auth\ResourceProviders\NativeArrayResourceProvider;
 use Lzpeng\Auth\UserProviders\NativeArrayUserProvider;
 
 /**
@@ -34,6 +35,9 @@ abstract class AbstractAuth
         });
         $authManager->registerAuthenticatorCreator('native_session', function (array $config) {
             return new NativeSessionAuthenticator($config['session_key']);
+        });
+        $authManager->registerResourceProvider('native_array', function ($config) {
+            return new NativeArrayResourceProvider($config);
         });
     }
 

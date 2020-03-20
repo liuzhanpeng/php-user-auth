@@ -5,11 +5,13 @@ namespace Lzpeng\Auth;
 use Lzpeng\Auth\AuthenticatorCreatorInterface;
 use Lzpeng\Auth\UserProviderCreatorInterface;
 use Lzpeng\Auth\AuthenticatorInterface;
-use Lzpeng\Auth\AuthEventInterface;
 use Lzpeng\Auth\UserProviderInterface;
-use Lzpeng\Auth\Access\AccessInterface;
+use Lzpeng\Auth\Access\AccessorCreator;
+use Lzpeng\Auth\Access\AccessorCreatorInterface;
+use Lzpeng\Auth\Access\EventableAccessorInterface;
 use Lzpeng\Auth\Access\ResourceProviderCreatorInterface;
 use Lzpeng\Auth\Access\ResourceProviderInterface;
+use Lzpeng\Auth\Event\EventableInterface;
 use Lzpeng\Auth\Event\EventManagerCreatorInterface;
 use Lzpeng\Auth\Event\EventManagerInterface;
 use Lzpeng\Auth\Event\EventManagerCreator;
@@ -63,19 +65,11 @@ class AuthManager
     private $eventManagerCreator;
 
     /**
-     * 有效的认证事件
+     * 访问控制器创建者
      *
-     * @var array
+     * @var AccessorCreatorInterface
      */
-    private $availableEvents = [
-        AuthEventInterface::EVENT_LOGIN_BEFORE,
-        AuthEventInterface::EVENT_LOGIN_FAILURE,
-        AuthEventInterface::EVENT_LOGIN_SUCCESS,
-        AuthEventInterface::EVENT_LOGOUT_BEFORE,
-        AuthEventInterface::EVENT_LOGUT_AFTER,
-        AuthEventInterface::EVENT_ACCESS_BEFORE,
-        AuthEventInterface::EVENT_ACCESS_AFTER,
-    ];
+    private $accessorCreator;
 
     /**
      * 权限资源提供器创建者列表
@@ -83,6 +77,21 @@ class AuthManager
      * @var array
      */
     private $resourceProviderCreators = [];
+
+    /**
+     * 有效的事件
+     *
+     * @var array
+     */
+    private $availableEvents = [
+        EventableAuthenticatorInterface::EVENT_LOGIN_BEFORE,
+        EventableAuthenticatorInterface::EVENT_LOGIN_FAILURE,
+        EventableAuthenticatorInterface::EVENT_LOGIN_SUCCESS,
+        EventableAuthenticatorInterface::EVENT_LOGOUT_BEFORE,
+        EventableAuthenticatorInterface::EVENT_LOGUT_AFTER,
+        EventableAccessorInterface::EVENT_ACCESS_BEFORE,
+        EventableAccessorInterface::EVENT_ACCESS_AFTER,
+    ];
 
     /**
      * 构造函数
@@ -175,6 +184,17 @@ class AuthManager
     }
 
     /**
+     * 设置访问控制器创建者
+     *
+     * @param AccessorCreatorInterface $creator
+     * @return void
+     */
+    public function setAccessorCreator(AccessorCreatorInterface $creator)
+    {
+        $this->accessorCreator = $creator;
+    }
+
+    /**
      * 注册权限资源提供器
      *
      * @param string $driver 驱动名称
@@ -210,13 +230,14 @@ class AuthManager
         } else {
             $authenticator = call_user_func($creator, $config['params'] ?? []);
         }
-        $authenticator->setUserProvider($userProvider);
 
         if (!$authenticator instanceof AuthenticatorInterface) {
             throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface接口', $config['driver']));
         }
 
-        if ($authenticator instanceof AuthEventInterface) {
+        $authenticator->setUserProvider($userProvider);
+
+        if ($authenticator instanceof EventableInterface) {
             if (is_null($this->eventManagerCreator)) {
                 // 如果没设置自定义的事件管理器创建者，用内部默认的
                 $this->eventManagerCreator = new EventManagerCreator();
@@ -232,13 +253,28 @@ class AuthManager
             $authenticator->setEventManager($eventManager);
         }
 
-        if (isset($config['access']) && isset($config['access']['driver'])) {
-            if (!$authenticator instanceof AccessInterface) {
-                throw new Exception(sprintf('认证器[%s]未实现AccessInterface接口', $config['driver']));
+        if ($authenticator instanceof AccessableInterface) {
+            if (is_null($this->accessorCreator)) {
+                $this->accessorCreator = new AccessorCreator();
             }
 
-            $resourceProvider = $this->createResourceProvider($config['access']);
-            $authenticator->setResourceProvider($resourceProvider);
+            $accessor = $this->accessorCreator->createAccessor();
+
+            if (isset($config['access']) && isset($config['access']['provider'])) {
+                $resourceProvider = $this->createResourceProvider($config['access']['provider']);
+                $accessor->setResourceProvider($resourceProvider);
+
+                if ($accessor instanceof EventableInterface) {
+
+                    $eventManager = $this->eventManagerCreator->createEventManager();
+                    if (isset($config['access']['events'])) {
+                        $this->addListeners($eventManager, $config['access']['events']);
+                    }
+                    $accessor->setEventManager($eventManager);
+                }
+            }
+
+            $authenticator->setAccessor($accessor);
         }
 
         return $authenticator;
