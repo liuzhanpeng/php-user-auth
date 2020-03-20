@@ -2,14 +2,12 @@
 
 namespace Lzpeng\Auth\Authenticators;
 
-use Lzpeng\Auth\Access\AccessInterface;
-use Lzpeng\Auth\Access\ResourceProviderInterface;
+use Lzpeng\Auth\Access\AccessorInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\UserInterface;
-use Lzpeng\Auth\EventableAuthenticatorInterface;
+use Lzpeng\Auth\AccessableAndEventableAuthenticatorInterface;
 use Lzpeng\Auth\Event\Event;
 use Lzpeng\Auth\Exception\Exception;
-use Lzpeng\Auth\Exception\AccessException;
 use Lzpeng\Auth\Exception\AuthException;
 use Lzpeng\Auth\Exception\InvalidCredentialException;
 
@@ -18,7 +16,7 @@ use Lzpeng\Auth\Exception\InvalidCredentialException;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-abstract class AbstractAuthenticator implements EventableAuthenticatorInterface, AccessInterface
+abstract class AbstractAuthenticator implements AccessableAndEventableAuthenticatorInterface
 {
     /**
      * 事件管理器
@@ -35,11 +33,11 @@ abstract class AbstractAuthenticator implements EventableAuthenticatorInterface,
     private $userProvider;
 
     /**
-     * 权限资源提供器
+     * 访问控制器
      *
-     * @var \Lzpeng\Auth\Access\ResourceProviderInterface
+     * @var \Lzpeng\Auth\Access\AccessorInterface
      */
-    private $resourceProvider;
+    private $accessor;
 
     /**
      * @inheritDoc
@@ -93,24 +91,23 @@ abstract class AbstractAuthenticator implements EventableAuthenticatorInterface,
     /**
      * @inheritDoc
      */
-    public function setResourceProvider(ResourceProviderInterface $resourceProvider)
+    public function setAccessor(AccessorInterface $accessor)
     {
-        $this->resourceProvider = $resourceProvider;
+        $this->accessor = $accessor;
     }
 
     /**
-     * 返回权限资源提供器
+     * 获取访问控制器
      *
-     * @return ResourceProviderInterface
-     * @throws Exception
+     * @return AccessorInterface
      */
-    public function getResourceProvider()
+    public function getAccessor()
     {
-        if (is_null($this->resourceProvider)) {
-            throw new Exception('认证器未设置权限资源提供器');
+        if (is_null($this->accessor)) {
+            throw new Exception('认证器未设置访问控制器');
         }
 
-        return $this->resourceProvider;
+        return $this->accessor;
     }
 
     /**
@@ -218,6 +215,21 @@ abstract class AbstractAuthenticator implements EventableAuthenticatorInterface,
     }
 
     /**
+     * 判断当前用户是否允许访问指定权限资源
+     *
+     * @param string $resourceId 资源标识
+     * @return boolean
+     */
+    public function isAllow($resourceId)
+    {
+        if (!$this->isLogined()) {
+            return false;
+        }
+
+        return $this->getAccessor()->isAllowed($this->user(), $resourceId);
+    }
+
+    /**
      * 持久化用户信息
      *
      * @param UserInterface $user 用户身份对象
@@ -240,37 +252,4 @@ abstract class AbstractAuthenticator implements EventableAuthenticatorInterface,
      * @throws AuthException
      */
     abstract protected function clearUser();
-
-    /**
-     * @inheritDoc
-     */
-    public function isAllowed($resourceId)
-    {
-        if (!$this->isLogined()) {
-            throw new AccessException('用户还未登录认证');
-        }
-
-        $this->getEventManager()->dispatch(self::EVENT_ACCESS_BEFORE, new Event([
-            'resourceId' => $resourceId,
-            'user' => $this->user(),
-        ]));
-
-        $provider = $this->getResourceProvider();
-
-        $result = false;
-        foreach ($provider->getResources($this->user()) as $resource) {
-            if ($resource->id() === $resourceId) {
-                $result = true;
-                break;
-            }
-        }
-
-        $this->getEventManager()->dispatch(self::EVENT_ACCESS_AFTER, new Event([
-            'resourceId' => $resourceId,
-            'user' => $this->user(),
-            'isAllowed' => $result,
-        ]));
-
-        return $result;
-    }
 }

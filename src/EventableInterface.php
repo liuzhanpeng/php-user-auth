@@ -10,7 +10,7 @@ use Lzpeng\Auth\Event\EventManagerInterface;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-interface AuthEventInterface
+interface EventableInterface
 {
     /**
      * 登录前事件
@@ -36,16 +36,6 @@ interface AuthEventInterface
      * 登录后事件
      */
     const EVENT_LOGUT_AFTER = 'logout_after';
-
-    /**
-     * 访问权限资源前事件
-     */
-    const EVENT_ACCESS_BEFORE = 'access_before';
-
-    /**
-     * 访问权限资源后事件
-     */
-    const EVENT_ACCESS_AFTER = 'access_after';
 
     /**
      * 设置事件管理器

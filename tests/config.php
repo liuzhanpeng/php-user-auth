@@ -79,7 +79,14 @@ return [
                 'session_key' => 'UserIdentity',
             ],
             'access' => [
-                'driver' => 'test_access_resource_provider',
+                'provider' => [
+                    'driver' => 'test_access_resource_provider',
+                ],
+                'events' => [
+                    'access_success' => [
+                        Lzpeng\Auth\Tests\TestListener::class,
+                    ]
+                ]
             ],
         ],
     ]
