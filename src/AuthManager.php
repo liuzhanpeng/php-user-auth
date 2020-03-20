@@ -11,6 +11,7 @@ use Lzpeng\Auth\Access\AccessorCreatorInterface;
 use Lzpeng\Auth\Access\EventableAccessorInterface;
 use Lzpeng\Auth\Access\ResourceProviderCreatorInterface;
 use Lzpeng\Auth\Access\ResourceProviderInterface;
+use Lzpeng\Auth\Event\EventableInterface;
 use Lzpeng\Auth\Event\EventManagerCreatorInterface;
 use Lzpeng\Auth\Event\EventManagerInterface;
 use Lzpeng\Auth\Event\EventManagerCreator;
@@ -262,6 +263,10 @@ class AuthManager
             if (isset($config['access']) && isset($config['access']['driver'])) {
                 $resourceProvider = $this->createResourceProvider($config['access']['driver']);
                 $accessor->setResourceProvider($resourceProvider);
+
+                if ($accessor instanceof EventableInterface) {
+                    $accessor->setEventManager($eventManager);
+                }
             }
 
             $authenticator->setAccessor($accessor);

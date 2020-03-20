@@ -3,10 +3,11 @@
 namespace Lzpeng\Auth\Authenticators;
 
 use Lzpeng\Auth\Access\AccessorInterface;
+use Lzpeng\Auth\AccessableInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\UserInterface;
-use Lzpeng\Auth\AccessableAndEventableAuthenticatorInterface;
 use Lzpeng\Auth\Event\Event;
+use Lzpeng\Auth\EventableAuthenticatorInterface;
 use Lzpeng\Auth\Exception\Exception;
 use Lzpeng\Auth\Exception\AuthException;
 use Lzpeng\Auth\Exception\InvalidCredentialException;
@@ -16,7 +17,7 @@ use Lzpeng\Auth\Exception\InvalidCredentialException;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-abstract class AbstractAuthenticator implements AccessableAndEventableAuthenticatorInterface
+abstract class AbstractAuthenticator implements EventableAuthenticatorInterface, AccessableInterface
 {
     /**
      * 事件管理器
@@ -220,7 +221,7 @@ abstract class AbstractAuthenticator implements AccessableAndEventableAuthentica
      * @param string $resourceId 资源标识
      * @return boolean
      */
-    public function isAllow($resourceId)
+    public function isAllowed(string $resourceId)
     {
         if (!$this->isLogined()) {
             return false;

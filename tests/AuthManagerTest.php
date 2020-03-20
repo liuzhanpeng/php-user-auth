@@ -20,7 +20,7 @@ class AuthManagerTest extends TestCase
 {
     private $authManager;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $config = require('config.php');
         $this->authManager = new AuthManager($config);

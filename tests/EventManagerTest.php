@@ -102,4 +102,41 @@ class EventManagerTest extends TestCase
             'result' => true,
         ]));
     }
+
+    /**
+     * @depends clone testConstruct
+     */
+    public function testDispatchNotExistsEvent($manager)
+    {
+        $manager->dispatch('not_exists_event', new Event([]));
+    }
+
+    /**
+     * @depends clone testConstruct
+     */
+    public function testDispatchStop($manager)
+    {
+        $listener = $this->getMockBuilder(EventListenerInterface::class)
+            ->setMethods(['handle'])
+            ->getMock();
+
+        $listener->expects($this->once())
+            ->method('handle')
+            ->with();
+
+        $listener2 = $this->getMockBuilder(EventListenerInterface::class)
+            ->setMethods(['handle'])
+            ->getMock();
+
+        $listener2->expects($this->never())
+            ->method('handle')
+            ->with();
+
+        $manager->addListener('login_success', $listener);
+        $manager->addListener('login_success', $listener2);
+
+        $event = new Event();
+        $event->stop();
+        $manager->dispatch('login_success', $event);
+    }
 }

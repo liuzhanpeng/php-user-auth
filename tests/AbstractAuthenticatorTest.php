@@ -2,11 +2,9 @@
 
 namespace Lzpeng\Auth\Tests;
 
-use Lzpeng\Auth\Access\ResourceInterface;
-use Lzpeng\Auth\Access\ResourceProviderInterface;
+use Lzpeng\Auth\Access\AccessorInterface;
 use Lzpeng\Auth\Authenticators\AbstractAuthenticator;
 use Lzpeng\Auth\Event\EventManagerInterface;
-use Lzpeng\Auth\Exception\AccessException;
 use Lzpeng\Auth\Exception\AuthException;
 use Lzpeng\Auth\Exception\Exception;
 use Lzpeng\Auth\Exception\InvalidCredentialException;
@@ -206,68 +204,46 @@ class AbstractAuthenticatorTest extends TestCase
         $authenticator->logout();
     }
 
-    // public function testIsAllowWithoutLogin()
-    // {
-    //     $this->expectException(AccessException::class);
-    //     $this->expectExceptionMessage('用户还未登录认证');
-    //     $this->authenticator->isAllowed('resource1');
-    // }
+    public function testIsAllowWithoutLogin()
+    {
+        $result = $this->authenticator->isAllowed('resource1');
+        $this->assertFalse($result);
+    }
 
-    // public function testIsAllowWithoutEventManager()
-    // {
-    //     $this->authenticator->method('loadUser')
-    //         ->willReturn(new GenericUser([
-    //             'id' => 1,
-    //             'name' => 'peng',
-    //             'password' => '123654',
-    //         ]));
+    /**
+     * @depends clone testSetEventManager
+     */
+    public function testIsAllowedWithoutAccessor($authenticator)
+    {
+        $authenticator->method('loadUser')
+            ->willReturn(new GenericUser([
+                'id' => 1,
+                'name' => 'peng',
+                'password' => '123654',
+            ]));
 
-    //     $this->expectException(Exception::class);
-    //     $this->expectExceptionMessage('认证器未设置事件管理器');
-    //     $this->authenticator->isAllowed('resource1');
-    // }
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('认证器未设置访问控制器');
+        $authenticator->isAllowed('resource1');
+    }
 
-    // /**
-    //  * @depends clone testSetEventManager
-    //  */
-    // public function testIsAllowedWithoutResourceProvider($authenticator)
-    // {
-    //     $authenticator->method('loadUser')
-    //         ->willReturn(new GenericUser([
-    //             'id' => 1,
-    //             'name' => 'peng',
-    //             'password' => '123654',
-    //         ]));
+    /**
+     * @depends clone testSetEventManager
+     */
+    public function testIsAllowed($authenticator)
+    {
+        $accessor = $this->getMockBuilder(AccessorInterface::class)->getMock();
+        $accessor->method('isAllowed')->willReturn(true);
 
-    //     $this->expectException(Exception::class);
-    //     $this->expectExceptionMessage('认证器未设置权限资源提供器');
-    //     $authenticator->isAllowed('resource1');
-    // }
+        $authenticator->setAccessor($accessor);
 
-    // /**
-    //  * @depends clone testSetEventManager
-    //  */
-    // public function testIsAllowed($authenticator)
-    // {
-    //     $authenticator->method('loadUser')
-    //         ->willReturn(new GenericUser([
-    //             'id' => 1,
-    //             'name' => 'peng',
-    //             'password' => '123654',
-    //         ]));
+        $authenticator->method('loadUser')
+            ->willReturn(new GenericUser([
+                'id' => 1,
+                'name' => 'peng',
+                'password' => '123654',
+            ]));
 
-    //     $resource1 = $this->createMock(ResourceInterface::class);
-    //     $resource1->method('id')->willReturn('resource1');
-    //     $resource2 = $this->createMock(ResourceInterface::class);
-    //     $resource2->method('id')->willReturn('resource2');
-
-    //     $resourceProvider = $this->getMockBuilder(ResourceProviderInterface::class)->getMock();
-    //     $resourceProvider->method('getResources')->willReturn([$resource1, $resource2]);
-
-    //     $authenticator->setResourceProvider($resourceProvider);
-
-    //     $this->assertFalse($authenticator->isAllowed('private_resource'));
-    //     $this->assertTrue($authenticator->isAllowed('resource1'));
-    //     $this->assertTrue($authenticator->isAllowed('resource2'));
-    // }
+        $this->assertTrue($authenticator->isAllowed('resource1'));
+    }
 }

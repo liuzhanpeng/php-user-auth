@@ -36,7 +36,7 @@ class Accessor implements EventableAccessorInterface
     protected function getEventManager()
     {
         if (is_null($this->eventManager)) {
-            throw new Exception('访问控制器未设置事件管理器');
+            throw new Exception('认证器未设置事件管理器');
         }
 
         return $this->eventManager;
