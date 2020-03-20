@@ -27,9 +27,9 @@ return [
                 ]
             ],
             'events' => [
-                // 'login_before' => [
-                //     Lzpeng\Tests\Listeners\LogCrendentials::class,
-                // ]
+                'login_before' => [
+                    Lzpeng\Auth\Tests\TestListener::class,
+                ]
             ],
         ],
         'test2' => [

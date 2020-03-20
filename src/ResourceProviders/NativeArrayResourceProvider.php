@@ -49,7 +49,7 @@ class NativeArrayResourceProvider implements ResourceProviderInterface
     {
         $resources = [];
         foreach ($this->config as $item) {
-            if ($item['id'] == $user->id()) {
+            if ($item['id'] === $user->id()) {
                 foreach ($item['resources'] as $resource) {
                     $resources[] = new GenericResource($resource);
                 }

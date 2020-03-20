@@ -4,10 +4,9 @@ namespace Lzpeng\Auth\Authenticators;
 
 use Lzpeng\Auth\Access\AccessInterface;
 use Lzpeng\Auth\Access\ResourceProviderInterface;
-use Lzpeng\Auth\AuthenticatorInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\UserInterface;
-use Lzpeng\Auth\AuthEventInterface;
+use Lzpeng\Auth\EventableAuthenticatorInterface;
 use Lzpeng\Auth\Event\Event;
 use Lzpeng\Auth\Exception\Exception;
 use Lzpeng\Auth\Exception\AccessException;
@@ -19,7 +18,7 @@ use Lzpeng\Auth\Exception\InvalidCredentialException;
  * 
  * @author lzpeng <liuzhanpeng@gmail.com>
  */
-abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEventInterface, AccessInterface
+abstract class AbstractAuthenticator implements EventableAuthenticatorInterface, AccessInterface
 {
     /**
      * 事件管理器
@@ -56,7 +55,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      * @return EventManagerInterface
      * @throws Exception
      */
-    public function getEventManager()
+    protected function getEventManager()
     {
         if (is_null($this->eventManager)) {
             throw new Exception('认证器未设置事件管理器');
@@ -223,6 +222,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      *
      * @param UserInterface $user 用户身份对象
      * @return void
+     * @throws AuthException
      */
     abstract protected function storeUser(UserInterface $user);
 
@@ -237,6 +237,7 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
      * 清除持久化的用户信息
      *
      * @return void
+     * @throws AuthException
      */
     abstract protected function clearUser();
 
@@ -249,20 +250,12 @@ abstract class AbstractAuthenticator implements AuthenticatorInterface, AuthEven
             throw new AccessException('用户还未登录认证');
         }
 
-        $eventManger = $this->getEventManager();
-        if (is_null($eventManger)) {
-            throw new Exception('认证器未设置事件管理器');
-        }
-
         $this->getEventManager()->dispatch(self::EVENT_ACCESS_BEFORE, new Event([
             'resourceId' => $resourceId,
             'user' => $this->user(),
         ]));
 
         $provider = $this->getResourceProvider();
-        if (is_null($provider)) {
-            throw new Exception('找不到权限资源提供器');
-        }
 
         $result = false;
         foreach ($provider->getResources($this->user()) as $resource) {

@@ -210,13 +210,14 @@ class AuthManager
         } else {
             $authenticator = call_user_func($creator, $config['params'] ?? []);
         }
-        $authenticator->setUserProvider($userProvider);
 
         if (!$authenticator instanceof AuthenticatorInterface) {
             throw new Exception(sprintf('认证器[%s]必须实现AuthenticatorInterface接口', $config['driver']));
         }
 
-        if ($authenticator instanceof AuthEventInterface) {
+        $authenticator->setUserProvider($userProvider);
+
+        if ($authenticator instanceof EventableAuthenticatorInterface) {
             if (is_null($this->eventManagerCreator)) {
                 // 如果没设置自定义的事件管理器创建者，用内部默认的
                 $this->eventManagerCreator = new EventManagerCreator();
