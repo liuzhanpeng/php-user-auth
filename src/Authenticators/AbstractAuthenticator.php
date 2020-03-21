@@ -234,7 +234,7 @@ abstract class AbstractAuthenticator implements EventableAuthenticatorInterface,
      * 持久化用户信息
      *
      * @param UserInterface $user 用户身份对象
-     * @return void
+     * @return mixed
      * @throws AuthException
      */
     abstract protected function storeUser(UserInterface $user);
