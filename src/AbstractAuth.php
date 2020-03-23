@@ -47,7 +47,7 @@ abstract class AbstractAuth
      *
      * @return array
      */
-    abstract protected function getConfig();
+    abstract static protected function getConfig();
 
     private function __construct()
     {
@@ -60,7 +60,7 @@ abstract class AbstractAuth
     public static function __callStatic($name, $arguments)
     {
         if (is_null(static::$instance)) {
-            static::$instance = new AuthManager($this->getConfig());
+            static::$instance = new AuthManager(static::getConfig());
             $this->init(static::$instance);
         }
 
