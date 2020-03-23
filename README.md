@@ -75,10 +75,15 @@ $authManager = new AuthManager($config);
 
 // 注册认证器
 $authManager->registerAuthenticatorCreator('session', function($config) {
+    // 认证器需要实现AuthenticatorInterface
+    // 如果需要事件处理功能，需要实现EventableInterface接口
+    // 如果需要访问控制功能，需要实现AccessableInterface接口
+    // 或直接继承AbstractAuthenticator
     return new SessionAuthenticator($config['session_key']);
 });
 // 注册用户提供器
 $authManager->registerUserProviderCreator('model', function($config) {
+    // 需要实现UserProviderinterface接口
     return new ModelUserProvider($config['model']);
 });
 
