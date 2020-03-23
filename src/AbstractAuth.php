@@ -19,7 +19,7 @@ abstract class AbstractAuth
      *
      * @var AuthManager
      */
-    private static $instance;
+    protected static $instance;
 
     /**
      * 初始化
