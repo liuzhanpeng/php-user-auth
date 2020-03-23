@@ -28,7 +28,7 @@ abstract class AbstractAuth
      * @param AuthManager $authManager 认证管理器
      * @return void
      */
-    protected function init($authManager)
+    static protected function init($authManager)
     {
         $authManager->registerUserProviderCreator('native_array', function (array $config) {
             return new NativeArrayUserProvider($config);
