@@ -61,7 +61,7 @@ abstract class AbstractAuth
     {
         if (is_null(static::$instance)) {
             static::$instance = new AuthManager(static::getConfig());
-            $this->init(static::$instance);
+            static::init(static::$instance);
         }
 
         return static::$instance->{$name}(...$arguments);
