@@ -7,6 +7,7 @@ use Lzpeng\Auth\AccessableInterface;
 use Lzpeng\Auth\UserProviderInterface;
 use Lzpeng\Auth\UserInterface;
 use Lzpeng\Auth\Event\Event;
+use Lzpeng\Auth\Event\EventManagerInterface;
 use Lzpeng\Auth\EventableAuthenticatorInterface;
 use Lzpeng\Auth\Exception\Exception;
 use Lzpeng\Auth\Exception\AuthException;
@@ -43,7 +44,7 @@ abstract class AbstractAuthenticator implements EventableAuthenticatorInterface,
     /**
      * @inheritDoc
      */
-    public function setEventManager($eventManager)
+    public function setEventManager(EventManagerInterface $eventManager)
     {
         $this->eventManager = $eventManager;
     }

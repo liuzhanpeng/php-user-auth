@@ -3,6 +3,7 @@
 namespace Lzpeng\Auth\Access;
 
 use Lzpeng\Auth\Event\Event;
+use Lzpeng\Auth\Event\EventManagerInterface;
 use Lzpeng\Auth\UserInterface;
 use Lzpeng\Auth\Exception\Exception;
 
@@ -45,7 +46,7 @@ class Accessor implements EventableAccessorInterface
     /**
      * @inheritDoc
      */
-    public function setEventManager($eventManager)
+    public function setEventManager(EventManagerInterface $eventManager)
     {
         $this->eventManager = $eventManager;
     }
