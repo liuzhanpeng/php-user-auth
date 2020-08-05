@@ -2,6 +2,7 @@
 
 namespace Lzpeng\Auth\Tests;
 
+use Lzpeng\Auth\Access\Accessor;
 use Lzpeng\Auth\Access\ResourceProviderCreatorInterface;
 use Lzpeng\Auth\Access\ResourceProviderInterface;
 use Lzpeng\Auth\AccessableInterface;
@@ -12,7 +13,7 @@ use Lzpeng\Auth\Authenticators\MemoryAuthenticatorCreator;
 use Lzpeng\Auth\AuthEventInterface;
 use PHPUnit\Framework\TestCase;
 use Lzpeng\Auth\AuthManager;
-use Lzpeng\Auth\Event\EventManagerCreator;
+use Lzpeng\Auth\Event\EventManager;
 use Lzpeng\Auth\Exception\ConfigException;
 use Lzpeng\Auth\Exception\Exception;
 use Lzpeng\Auth\UserProviderCreatorInterface;
@@ -237,6 +238,13 @@ class AuthManagerTest extends TestCase
         $creator->method('createAuthenticator')
             ->willReturn($authenticator);
 
+        $authManager->setEventManagerCreator(function () {
+            return new EventManager();
+        });
+        $authManager->setAccessorCreator(function () {
+            return new Accessor();
+        });
+
         $authManager->registerAuthenticatorCreator('test_authenticator_driver', $creator);
 
         $authManager->registerResourceProvider('test_access_resource_provider', function ($config) {
@@ -244,6 +252,7 @@ class AuthManagerTest extends TestCase
 
             return $provider;
         });
+
 
         $authenticator = $authManager->create('test3');
     }

@@ -175,10 +175,10 @@ class AuthManager
     /**
      * 设置事件管理器创建者
      *
-     * @param EventManagerCreatorInterface $creator 事件管理器创建者
+     * @param EventManagerCreatorInterface|callable $creator 事件管理器创建者
      * @return void
      */
-    public function setEventManagerCreator(EventManagerCreatorInterface $creator)
+    public function setEventManagerCreator($creator)
     {
         $this->eventManagerCreator = $creator;
     }
@@ -186,10 +186,10 @@ class AuthManager
     /**
      * 设置访问控制器创建者
      *
-     * @param AccessorCreatorInterface $creator
+     * @param AccessorCreatorInterface|callable $creator
      * @return void
      */
-    public function setAccessorCreator(AccessorCreatorInterface $creator)
+    public function setAccessorCreator($creator)
     {
         $this->accessorCreator = $creator;
     }
@@ -244,7 +244,12 @@ class AuthManager
             }
 
             // 注册事件
-            $eventManager = $this->eventManagerCreator->createEventManager();
+            if ($this->eventManagerCreator instanceof EventManagerCreatorInterface) {
+                $eventManager = $this->eventManagerCreator->createEventManager();
+            } else {
+                $eventManager = call_user_func($this->eventManagerCreator);
+            }
+
             if (isset($config['events'])) {
                 $this->addListeners($eventManager, $config['events']);
             }
@@ -258,7 +263,11 @@ class AuthManager
                 $this->accessorCreator = new AccessorCreator();
             }
 
-            $accessor = $this->accessorCreator->createAccessor();
+            if ($this->accessorCreator instanceof AccessorCreatorInterface) {
+                $accessor = $this->accessorCreator->createAccessor();
+            } else {
+                $accessor = call_user_func($this->accessorCreator);
+            }
 
             if (isset($config['access']) && isset($config['access']['provider'])) {
                 $resourceProvider = $this->createResourceProvider($config['access']['provider']);
@@ -266,7 +275,12 @@ class AuthManager
             }
 
             if ($accessor instanceof EventableInterface) {
-                $eventManager = $this->eventManagerCreator->createEventManager();
+                if ($this->eventManagerCreator instanceof EventManagerCreatorInterface) {
+                    $eventManager = $this->eventManagerCreator->createEventManager();
+                } else {
+                    $eventManager = call_user_func($this->eventManagerCreator);
+                }
+
                 if (isset($config['access']['events'])) {
                     $this->addListeners($eventManager, $config['access']['events']);
                 }
